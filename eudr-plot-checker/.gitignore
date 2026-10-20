@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+# large rasters stay out of git; quicklooks and metadata are small and kept
+data/raw/*.tif
+data/outputs/**/*.tif

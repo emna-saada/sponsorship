@@ -1,0 +1,5 @@
+earthengine-api>=1.0
+geemap>=0.35
+geedim>=1.9          # tiled full-resolution downloads (used by --local)
+matplotlib>=3.8
+requests>=2.31

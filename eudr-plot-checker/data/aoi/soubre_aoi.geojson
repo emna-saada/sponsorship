@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "soubre",
+        "label": "Soubr\u00e9, Nawa region, C\u00f4te d'Ivoire",
+        "why": "Nawa is C\u00f4te d'Ivoire's largest cocoa-producing region and Soubr\u00e9 its main hub. The area lies between Ta\u00ef National Park and the Sassandra river, a frontier where forest was converted to cocoa, and it includes the Soubr\u00e9 dam reservoir (filled 2017), a clear landmark for checking the composites."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -6.76,
+              5.63
+            ],
+            [
+              -6.45,
+              5.63
+            ],
+            [
+              -6.45,
+              5.94
+            ],
+            [
+              -6.76,
+              5.94
+            ],
+            [
+              -6.76,
+              5.63
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

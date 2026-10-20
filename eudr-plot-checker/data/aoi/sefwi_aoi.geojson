@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "sefwi",
+        "label": "Sefwi Wiawso, Western North region, Ghana",
+        "why": "Western North is Ghana's leading cocoa region, with forest reserves next to smallholder cocoa farms."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -2.65,
+              6.05
+            ],
+            [
+              -2.35,
+              6.05
+            ],
+            [
+              -2.35,
+              6.35
+            ],
+            [
+              -2.65,
+              6.35
+            ],
+            [
+              -2.65,
+              6.05
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
