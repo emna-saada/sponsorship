@@ -70,8 +70,13 @@ function stretch(img, bands, gamma) {
 }
 
 // ---------------- run ----------------
+// In a wipe view the right map covers the left map's Layers menu, so 2018 layers
+// can't be toggled there. Both maps' menus are hidden; one dropdown drives both.
+var VIEWS = ['true colour', 'false colour (SWIR/NIR/R)', 'clear observations'];
 var left = ui.Map();
 var right = ui.Map();
+left.setControlVisibility({layerList: false});
+right.setControlVisibility({layerList: false});
 
 EPOCHS.forEach(function (e) {
   var img = composite(e);
@@ -88,11 +93,12 @@ EPOCHS.forEach(function (e) {
   }));
 
   var map = e.year === 2018 ? left : right;
-  map.addLayer(stretch(img, TRUE_BANDS, 1.2), {}, e.year + ' true colour');
-  map.addLayer(stretch(img, FALSE_BANDS, 1.0), {}, e.year + ' false colour (SWIR/NIR/R)', false);
+  map.addLayer(stretch(img, TRUE_BANDS, 1.2), {}, e.year + ' ' + VIEWS[0]);
+  map.addLayer(stretch(img, FALSE_BANDS, 1.0), {}, e.year + ' ' + VIEWS[1], false);
   map.addLayer(img.select('clear_obs'), {min: 0, max: 30, palette: ['red', 'yellow', 'green']},
-               e.year + ' clear observations', false);
-  map.add(ui.Label(String(e.year), {fontWeight: 'bold', fontSize: '18px'}));
+               e.year + ' ' + VIEWS[2], false);
+  map.add(ui.Label(String(e.year), {fontWeight: 'bold', fontSize: '18px',
+                                     position: e.year === 2018 ? 'bottom-left' : 'bottom-right'}));
 
   // Appear in the Tasks tab: click RUN on each to write the 10 m GeoTIFF to Drive.
   Export.image.toDrive({
@@ -106,4 +112,13 @@ EPOCHS.forEach(function (e) {
 ui.Map.Linker([left, right]);
 ui.root.widgets().reset([ui.SplitPanel({firstPanel: left, secondPanel: right, wipe: true})]);
 left.centerObject(aoi, 12);
-left.addLayer(ee.FeatureCollection([ee.Feature(aoi)]).style({color: 'white', fillColor: '00000000'}), {}, 'AOI');
+
+left.add(ui.Select({
+  items: VIEWS, value: VIEWS[0], style: {position: 'top-left'},
+  onChange: function (view) {
+    var i = VIEWS.indexOf(view);
+    [left, right].forEach(function (m) {
+      m.layers().forEach(function (layer, j) { layer.setShown(j === i); });
+    });
+  }
+}));
