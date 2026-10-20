@@ -26,19 +26,28 @@ from eudr_checker.config import AOIS, EPOCHS, OUTPUT_DIR, AOI_DIR
 from eudr_checker.ee_utils import aoi_geometry, initialize, write_aoi_geojson
 from eudr_checker.sentinel2 import Composite, median_composite
 
-# Stretches picked for humid tropical vegetation; L1C is a little brighter
-# (no atmospheric correction) but the same stretch is readable for both.
+# Quicklook band combinations and gamma. Min/max come from a per-band 2-98 %
+# stretch over the AOI: a fixed stretch leaves the hazy L1C 2018 composite
+# blue-grey because it has no atmospheric correction.
 VIS = {
-    "true_color": {"bands": ["B4", "B3", "B2"], "min": 100, "max": 1800, "gamma": 1.2},
-    # NIR / SWIR1 / Red: intact forest is deep green, cocoa and fallow lighter
-    # green-orange, bare soil and settlements pink-magenta, water black.
-    "false_color": {"bands": ["B8", "B11", "B4"], "min": [500, 300, 100],
-                    "max": [4500, 3000, 1800], "gamma": 1.0},
+    "true_color": {"bands": ["B4", "B3", "B2"], "gamma": 1.2},
+    # SWIR1 / NIR / Red: closed forest dark green, cocoa and fallow brighter
+    # yellow-green, bare soil and settlements pink-magenta, water dark blue.
+    "false_color": {"bands": ["B11", "B8", "B4"], "gamma": 1.0},
 }
+
+
+def percentile_stretch(image: ee.Image, region: ee.Geometry, bands: list[str]) -> dict:
+    p = image.select(bands).reduceRegion(
+        reducer=ee.Reducer.percentile([2, 98]), geometry=region, scale=60,
+        maxPixels=1e9, bestEffort=True,
+    ).getInfo()
+    return {"min": [p[f"{b}_p2"] for b in bands], "max": [p[f"{b}_p98"] for b in bands]}
 
 
 def save_quicklook(image: ee.Image, region: ee.Geometry, vis: dict, path: Path,
                    dimensions: int) -> None:
+    vis = {**vis, **percentile_stretch(image, region, vis["bands"])}
     url = image.visualize(**vis).getThumbURL(
         {"region": region, "dimensions": dimensions, "format": "png"}
     )

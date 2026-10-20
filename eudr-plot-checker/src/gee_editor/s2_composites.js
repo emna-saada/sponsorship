@@ -4,7 +4,7 @@
 
 // ---------------- settings ----------------
 var AOI_NAME = 'soubre';  // Soubré, Nawa region, Côte d'Ivoire
-var aoi = ee.Geometry.Rectangle([-6.76, 5.63, -6.45, 5.94], 'EPSG:4326', false);
+var aoi = ee.Geometry.Rectangle([-6.76, 5.63, -6.33, 5.94], 'EPSG:4326', false);
 var CRS = 'EPSG:32629';   // UTM 29N
 // Ghana alternative (Sefwi Wiawso):
 // var AOI_NAME = 'sefwi';
@@ -22,9 +22,10 @@ var EPOCHS = [
   {year: 2025, start: '2025-01-01', end: '2026-01-01'}
 ];
 
-var VIS_TRUE = {bands: ['B4', 'B3', 'B2'], min: 100, max: 1800, gamma: 1.2};
-// NIR / SWIR1 / Red: forest deep green, cocoa/fallow lighter, bare soil pink, water black
-var VIS_FALSE = {bands: ['B8', 'B11', 'B4'], min: [500, 300, 100], max: [4500, 3000, 1800]};
+var TRUE_BANDS = ['B4', 'B3', 'B2'];
+// SWIR1 / NIR / Red: closed forest dark green, cocoa and fallow brighter yellow-green,
+// bare soil and settlements pink-magenta, water dark blue.
+var FALSE_BANDS = ['B11', 'B8', 'B4'];
 
 // ---------------- composite ----------------
 var csPlus = ee.ImageCollection('GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED');
@@ -52,6 +53,22 @@ function composite(e) {
     .set({year: e.year, product_level: level, n_scenes: col.size()});
 }
 
+// Per-band 2-98 % stretch over the AOI. A fixed stretch leaves the hazy L1C 2018
+// composite blue-grey (no atmospheric correction), and this fixes it without
+// retuning numbers per year.
+function stretch(img, bands, gamma) {
+  var p = img.select(bands).reduceRegion({
+    reducer: ee.Reducer.percentile([2, 98]), geometry: aoi, scale: 60,
+    maxPixels: 1e9, bestEffort: true
+  });
+  return img.visualize({
+    bands: bands,
+    min: bands.map(function (b) { return p.get(b + '_p2'); }),
+    max: bands.map(function (b) { return p.get(b + '_p98'); }),
+    gamma: gamma
+  });
+}
+
 // ---------------- run ----------------
 var left = ui.Map();
 var right = ui.Map();
@@ -71,9 +88,9 @@ EPOCHS.forEach(function (e) {
   }));
 
   var map = e.year === 2018 ? left : right;
-  map.addLayer(img, VIS_TRUE, e.year + ' true colour');
-  map.addLayer(img, VIS_FALSE, e.year + ' false colour (NIR/SWIR/R)', false);
-  map.addLayer(img.select('clear_obs'), {min: 0, max: 40, palette: ['red', 'yellow', 'green']},
+  map.addLayer(stretch(img, TRUE_BANDS, 1.2), {}, e.year + ' true colour');
+  map.addLayer(stretch(img, FALSE_BANDS, 1.0), {}, e.year + ' false colour (SWIR/NIR/R)', false);
+  map.addLayer(img.select('clear_obs'), {min: 0, max: 30, palette: ['red', 'yellow', 'green']},
                e.year + ' clear observations', false);
   map.add(ui.Label(String(e.year), {fontWeight: 'bold', fontSize: '18px'}));
 

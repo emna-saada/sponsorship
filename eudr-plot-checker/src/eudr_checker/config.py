@@ -37,14 +37,16 @@ AOIS = {
     "soubre": AOI(
         name="soubre",
         label="Soubré, Nawa region, Côte d'Ivoire",
-        bbox=(-6.76, 5.63, -6.45, 5.94),
+        bbox=(-6.76, 5.63, -6.33, 5.94),
         crs="EPSG:32629",  # UTM 29N (-12° to -6°)
         why=(
             "Nawa is Côte d'Ivoire's largest cocoa-producing region and Soubré "
             "its main hub. The area lies between Taï National Park and the "
             "Sassandra river, a frontier where forest was converted to cocoa, "
             "and it includes the Soubré dam reservoir (filled 2017), a clear "
-            "landmark for checking the composites."
+            "landmark for checking the composites. The eastern edge takes in a "
+            "block plantation, so the sample covers estate as well as "
+            "smallholder land use."
         ),
     ),
     "sefwi": AOI(

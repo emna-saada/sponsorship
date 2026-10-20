@@ -20,13 +20,13 @@ and gives each plot a risk flag.
 
 ## Study area
 
-**Soubré, Nawa region, Côte d'Ivoire** (`bbox -6.76, 5.63, -6.45, 5.94`, about 34 × 34 km).
+**Soubré, Nawa region, Côte d'Ivoire** (`bbox -6.76, 5.63, -6.33, 5.94`, about 47 × 34 km).
 Nawa is the country's largest cocoa-producing region, and Soubré is its
 main hub. The area lies between Taï National Park and the Sassandra river.
 Forest was converted to cocoa here over the past decades, so it's a good place
 to look for both compliant and non-compliant plots. The Soubré
 hydro-dam reservoir (filled in 2017) is an easy landmark for checking
-georeferencing. A Ghanaian alternative (Sefwi Wiawso, Western North) is
+georeferencing. The eastern edge takes in a block plantation, so the sample covers estate as well as smallholder land use. A Ghanaian alternative (Sefwi Wiawso, Western North) is
 available with `--aoi sefwi`. AOIs are defined in `src/eudr_checker/config.py`.
 
 ## Setup
@@ -49,6 +49,8 @@ python src/export_s2_composites.py --local         # also download the GeoTIFFs 
 python src/export_s2_composites.py --aoi sefwi --no-drive
 ```
 
+The same step as a Code Editor script, with a 2018/2025 swipe view: `src/gee_editor/s2_composites.js`.
+
 Outputs:
 
 - `data/aoi/<aoi>_aoi.geojson`: the study-area rectangle
@@ -69,6 +71,9 @@ Method notes:
   10 L2A scenes and records which level it used. That's fine for visual context, but the
   quantitative NDVI analysis in step 4 will use L2A from 2019 onward, which covers the 2020
   cut-off.
+- **Quicklooks use a per-band 2–98 % stretch** over the AOI, so the hazy L1C 2018 composite and the
+  L2A 2025 composite both display with balanced colours. Don't compare brightness between the two
+  quicklooks; use the GeoTIFFs for anything quantitative.
 - The `HARMONIZED` collections remove the +1000 DN offset that ESA added in January 2022, so 2018 and
   2025 values are on the same scale.
 
