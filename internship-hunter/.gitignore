@@ -1,0 +1,7 @@
+config.toml
+*.db
+outbox/
+output/
+__pycache__/
+.env
+.pytest_cache/

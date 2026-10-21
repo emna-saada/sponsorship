@@ -1,0 +1,60 @@
+# Copy to config.toml and fill in. Secrets (passwords, API keys) go in environment
+# variables, never in this file:
+#   SMTP_PASSWORD        app password of your mailbox (Gmail: myaccount.google.com/apppasswords)
+#   ADZUNA_APP_ID / ADZUNA_APP_KEY   free keys from developer.adzuna.com (19 countries)
+#   ANTHROPIC_API_KEY    optional, tailors each cover letter with Claude
+
+[profile]
+name = "Your Name"
+email = "you@example.com"
+phone = "+216 00 000 000"
+linkedin = "https://www.linkedin.com/in/your-handle"
+school = "Your Engineering School"
+degree = "Engineering degree in Geoinformatics"
+graduation = "2027"
+internship_duration = "4 to 6 months"
+internship_start = "February 2027"
+resume_pdf = "data/resume.pdf"
+# Optional extra PDF attached as-is. If empty, a tailored cover letter PDF is generated per company.
+static_cover_letter_pdf = ""
+# Short pitch used in the generated letters, in your own words.
+pitch = """My focus is GIS, remote sensing and GeoAI. I build spatial data pipelines with Python, PostGIS and GDAL, and I have trained \
+deep-learning models on satellite imagery."""
+# Language of generated letters: "en" or "fr"
+letter_language = "en"
+
+[search]
+# Domain keywords: a job must match at least one of these.
+domain_keywords = [
+  "geoinformatics", "geomatics", "géomatique", "GIS", "SIG", "geospatial", "géospatial",
+  "GeoAI", "remote sensing", "télédétection", "earth observation", "satellite imagery",
+  "photogrammetry", "LiDAR", "cartography", "spatial data", "spatial analysis",
+  "QGIS", "ArcGIS", "PostGIS", "GDAL", "Geodaten", "Fernerkundung", "geodesy", "geodata", "spatial data science",
+]
+# Internship keywords: a job must match at least one of these.
+internship_keywords = [
+  "intern", "internship", "offre de stage", "stage de fin", "stage ingénieur", "stagiaire", "PFE", "projet de fin d'études",
+  "fin d'études", "end of studies", "final year", "graduation project", "master thesis",
+  "Praktikum", "Praktikant", "Abschlussarbeit", "prácticas", "becario", "tirocinio", "stagiair",
+]
+exclude_keywords = ["senior", "principal", "staff engineer", "head of", "director", "10+ years", "5+ years"]
+min_score = 45
+# Adzuna country codes searched when keys are set (worldwide coverage).
+adzuna_countries = ["gb", "us", "ca", "au", "de", "fr", "nl", "be", "at", "ch", "es", "it", "pl", "in", "sg", "nz", "za", "br", "mx"]
+# Which public sources to query.
+sources = ["arbeitnow", "remotive", "remoteok", "jobicy", "adzuna", "ats"]
+
+[email]
+smtp_host = "smtp.gmail.com"
+smtp_port = 465            # 465 = SSL, 587 = STARTTLS
+smtp_user = "you@example.com"
+daily_limit = 15           # stay low: big bursts get your mailbox flagged as spam
+seconds_between = 90
+# Contact the same company at most once, even through different addresses.
+one_email_per_company = true
+# Check that the mailbox server answers RCPT TO. Many servers refuse this; off by default.
+smtp_probe = false
+
+[ai]
+enabled = true             # only used when ANTHROPIC_API_KEY is set
+model = "claude-opus-5-5"

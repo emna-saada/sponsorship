@@ -1,0 +1,6 @@
+requests>=2.31
+pypdf>=4.0
+fpdf2>=2.7
+dnspython>=2.4
+# optional: AI-tailored cover letters (set ANTHROPIC_API_KEY)
+anthropic>=0.40
