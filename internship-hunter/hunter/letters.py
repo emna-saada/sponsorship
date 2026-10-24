@@ -80,7 +80,9 @@ def pretty(skill: str) -> str:
 def _fields(profile: dict, opp: Opportunity, skills: list[str], lang: str) -> dict:
     spontaneous = opp.source == "manual" and not opp.url
     title = "final-year internship" if spontaneous else opp.title
-    shown = ", ".join(pretty(k) for k in skills[:5]) if skills else ("GIS, remote sensing and Python" if lang == "en" else "SIG, télédétection et Python")
+    names = [pretty(k) for k in skills[:5]]
+    joiner = " and " if lang == "en" else " et "
+    shown = ", ".join(names[:-1]) + joiner + names[-1] if len(names) > 1 else "".join(names) if skills else ("GIS, remote sensing and Python" if lang == "en" else "SIG, télédétection et Python")
     return {
         "name": profile.get("name", ""), "email": profile.get("email", ""), "phone": profile.get("phone", ""),
         "linkedin": profile.get("linkedin", ""), "school": profile.get("school", ""),
