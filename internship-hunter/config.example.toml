@@ -12,7 +12,7 @@ linkedin = "https://www.linkedin.com/in/your-handle"
 school = "Your Engineering School"
 degree = "Engineering degree in Geoinformatics"
 graduation = "2027"
-internship_duration = "4 to 6 months"
+internship_duration = "4- to 6-month"
 internship_start = "February 2027"
 resume_pdf = "data/resume.pdf"
 # Optional extra PDF attached as-is. If empty, a tailored cover letter PDF is generated per company.

@@ -66,11 +66,15 @@ FIT = {
 PRETTY = {"pytorch": "PyTorch", "tensorflow": "TensorFlow", "postgis": "PostGIS", "postgresql": "PostgreSQL",
           "geopandas": "GeoPandas", "arcgis": "ArcGIS", "arcgis pro": "ArcGIS Pro", "arcpy": "ArcPy",
           "javascript": "JavaScript", "openlayers": "OpenLayers", "geoserver": "GeoServer", "geojson": "GeoJSON",
-          "openstreetmap": "OpenStreetMap", "webgis": "WebGIS", "google earth engine": "Google Earth Engine"}
+          "openstreetmap": "OpenStreetMap", "webgis": "WebGIS", "google earth engine": "Google Earth Engine",
+          "earth engine": "Earth Engine", "python": "Python", "sentinel-2": "Sentinel-2", "sentinel": "Sentinel",
+          "landsat": "Landsat", "u-net": "U-Net", "unet": "U-Net", "xgboost": "XGBoost", "keras": "Keras",
+          "power bi": "Power BI", "elasticsearch": "Elasticsearch", "kibana": "Kibana", "streamlit": "Streamlit",
+          "django": "Django", "docker": "Docker", "lidar": "LiDAR", "rasterio": "Rasterio", "shapely": "Shapely"}
 
 
 def pretty(skill: str) -> str:
-    return PRETTY.get(skill) or (skill.upper() if len(skill) <= 4 else skill.capitalize())
+    return PRETTY.get(skill) or (skill.upper() if len(skill) <= 4 else skill)
 
 
 def _fields(profile: dict, opp: Opportunity, skills: list[str], lang: str) -> dict:

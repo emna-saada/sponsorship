@@ -12,6 +12,9 @@ SKILLS = [
     "gis", "webgis", "leaflet", "openlayers", "mapbox", "geoserver", "docker", "spark",
     "stac", "geojson", "osm", "openstreetmap", "cartography", "geostatistics", "kriging",
     "javascript", "fme", "envi", "erdas", "dbt", "airflow", "aws", "gcp", "azure",
+    "geemap", "sentinel-2", "ndvi", "change detection", "u-net", "unet", "scikit-learn", "keras",
+    "xgboost", "federated learning", "image classification", "image processing", "streamlit",
+    "elasticsearch", "kibana", "power bi", "django", "gnss", "geodesy", "time series", "pandas",
 ]
 
 
