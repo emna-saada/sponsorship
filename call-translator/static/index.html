@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Call Translator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <h1>Live Call Translator</h1>
+      <span id="server-status" class="pill">Connecting…</span>
+    </div>
+    <div class="controls">
+      <button id="start" class="btn-start" disabled>Start</button>
+      <label class="mic">
+        <span>Microphone</span>
+        <select id="mic"><option value="">Default microphone</option></select>
+      </label>
+      <div class="level" title="Input level"><div id="level-fill"></div></div>
+      <span id="listening" class="listening" hidden><i></i>listening…</span>
+      <div class="spacer"></div>
+      <button id="clear" class="btn-ghost">Clear</button>
+      <button id="export" class="btn-ghost">Export transcript</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <main id="feed" class="feed">
+    <div id="empty" class="empty">
+      <p>Put the call on speaker near the PC and press <b>Start</b>.</p>
+      <p>English → French + Arabic &nbsp;·&nbsp; French → Arabic + English</p>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
