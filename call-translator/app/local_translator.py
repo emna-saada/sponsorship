@@ -41,23 +41,25 @@ class LocalTranslator:
         """Download (first run only) and load the model. Call from a worker thread."""
         try:
             path = Path(snapshot_download(self.repo))
-            device, _ = pick_device()
-            compute = "int8_float16" if device == "cuda" else "int8"
-            try:
-                self.translator = ctranslate2.Translator(str(path), device=device, compute_type=compute)
-            except Exception as e:  # CUDA libraries missing -> CPU
-                if device == "cpu":
-                    raise
-                log.warning("Could not load NLLB on %s (%s); using CPU", device, e)
-                device, compute = "cpu", "int8"
-                self.translator = ctranslate2.Translator(str(path), device=device, compute_type=compute)
             tok_file = path / "tokenizer.json"
             if not tok_file.exists():
                 tok_file = Path(hf_hub_download(TOKENIZER_REPO, "tokenizer.json"))
             self.tokenizer = Tokenizer.from_file(str(tok_file))
+
+            device, _ = pick_device()
+            candidates = [(device, "int8_float16")] if device == "cuda" else []
+            candidates.append(("cpu", "int8"))
+            for device, compute in candidates:
+                try:
+                    self.translator = ctranslate2.Translator(str(path), device=device, compute_type=compute)
+                    self._translate_sync("Hello.", "en")  # warm-up; also proves GPU libraries work
+                    break
+                except Exception as e:  # e.g. cuBLAS DLL missing -> CPU
+                    if device == "cpu":
+                        raise
+                    log.warning("NLLB failed on %s (%s); falling back to CPU int8", device, e)
             self.model = f"NLLB {self.repo.split('/')[-1]} · {device}"
             log.info("Loaded %s on %s/%s", self.repo, device, compute)
-            self._translate_sync("Hello.", "en")  # warm-up
         except Exception as e:  # noqa: BLE001 - surfaced to the UI
             log.exception("Failed to load translation model")
             self.load_error = f"Could not load translation model '{self.repo}': {e}"

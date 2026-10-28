@@ -52,24 +52,29 @@ def pick_device() -> tuple[str, str]:
 
 class Transcriber:
     def __init__(self, model_name: str = config.WHISPER_MODEL):
-        device, compute = pick_device()
-        try:
-            self.model = WhisperModel(model_name, device=device, compute_type=compute)
-        except Exception as e:  # e.g. CUDA present but cuDNN/cuBLAS DLLs missing
-            if device == "cpu":
-                raise
-            log.warning("Could not load on %s (%s); using CPU int8", device, e)
-            device, compute = "cpu", "int8"
-            self.model = WhisperModel(model_name, device=device, compute_type=compute)
+        candidates = [pick_device()]
+        if candidates[0][0] != "cpu":
+            candidates.append(("cpu", "int8"))
+        for device, compute in candidates:
+            try:
+                self._load(model_name, device, compute)
+                # Warm up (also proves the GPU libraries actually work, e.g. cuBLAS/cuDNN DLLs).
+                self.transcribe(np.zeros(config.SAMPLE_RATE, dtype=np.float32))
+                break
+            except Exception as e:
+                if device == "cpu":
+                    raise
+                log.warning("Whisper failed on %s (%s); falling back to CPU int8", device, e)
+        log.info("Whisper '%s' ready on %s", model_name, self.device)
+
+    def _load(self, model_name: str, device: str, compute: str) -> None:
+        self.model = WhisperModel(model_name, device=device, compute_type=compute)
         self.device = f"{device}/{compute}"
-        log.info("Whisper '%s' loaded on %s", model_name, self.device)
         self.tokenizers = {
             lang: Tokenizer(self.model.hf_tokenizer, multilingual=True, task="transcribe", language=lang)
             for lang in LANGS
         }
         self.suppress = {lang: list(get_suppressed_tokens(t, [-1])) for lang, t in self.tokenizers.items()}
-        # Warm up so the first real segment isn't slow.
-        self.transcribe(np.zeros(config.SAMPLE_RATE, dtype=np.float32))
 
     def _decode(self, encoder_output, lang: str, beam_size: int) -> tuple[str, float, float]:
         tok = self.tokenizers[lang]
