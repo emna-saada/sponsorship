@@ -21,9 +21,9 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .segmenter import Segment, Segmenter
+from .common import TranslationError
 from .local_translator import LocalTranslator
 from .transcriber import Transcriber
-from .translator import TranslationError, Translator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("server")
@@ -33,7 +33,12 @@ STATIC = config.ROOT / "static"
 # Whisper is CPU/GPU heavy and not meant for concurrent calls: one worker thread.
 whisper_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="whisper")
 state: dict = {"transcriber": None, "load_error": None, "ready": asyncio.Event()}
-translator = LocalTranslator() if config.TRANSLATOR != "claude" else Translator()
+if config.TRANSLATOR == "claude":
+    from .translator import Translator  # optional: only imports the anthropic SDK when used
+
+    translator = Translator()
+else:
+    translator = LocalTranslator()
 
 
 def _load_model() -> None:

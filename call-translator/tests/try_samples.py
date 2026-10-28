@@ -18,7 +18,7 @@ from app import config
 from app.local_translator import LocalTranslator
 from app.segmenter import Segmenter
 from app.transcriber import Transcriber
-from app.translator import TranslationError, Translator
+from app.common import TranslationError
 
 
 def decode_audio(path: str) -> np.ndarray:
@@ -39,6 +39,8 @@ async def main(paths: list[str]) -> None:
     stt = Transcriber()
     print(f"Whisper loaded on {stt.device} in {time.perf_counter() - t0:.1f}s")
     if config.TRANSLATOR == "claude":
+        from app.translator import Translator
+
         tr = Translator()
     else:
         t0 = time.perf_counter()

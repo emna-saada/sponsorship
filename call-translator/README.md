@@ -58,7 +58,7 @@ python -m app.server            # then open http://localhost:8000
 |---|---|---|
 | `TRANSLATOR` | `local` | `local` = free offline NLLB. `claude` = paid Claude API (needs a key). |
 | `NLLB_MODEL` | `osa911/nllb-200-distilled-600M-ct2-int8` | Use `OpenNMT/nllb-200-distilled-1.3B-ct2-int8` for slightly better translations (~2× slower on CPU, fine with a GPU). |
-| `ANTHROPIC_API_KEY` | – | Only for `TRANSLATOR=claude`. Never commit `.env`. |
+| `ANTHROPIC_API_KEY` | – | Only for `TRANSLATOR=claude` (also run `pip install anthropic`). Never commit `.env`. |
 | `CLAUDE_MODEL` | `claude-haiku-5-5` | Only for `TRANSLATOR=claude`. |
 | `WHISPER_MODEL` | `small` | `medium` is more accurate but ~2–3× slower (use with a GPU). |
 | `WHISPER_DEVICE` | `auto` | `auto` uses an NVIDIA GPU (CUDA, float16) if available, else CPU (int8). |

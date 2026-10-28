@@ -16,7 +16,7 @@ from tokenizers import Tokenizer
 
 from . import config
 from .transcriber import pick_device
-from .translator import TARGETS, TranslationError
+from .common import TARGETS, TranslationError
 
 log = logging.getLogger("local_translator")
 

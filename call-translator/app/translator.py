@@ -7,11 +7,9 @@ import anthropic
 from pydantic import BaseModel
 
 from . import config
+from .common import TARGETS, TranslationError
 
 log = logging.getLogger("translator")
-
-TARGETS = {"en": ("fr", "ar"), "fr": ("ar", "en")}
-NAMES = {"en": "English", "fr": "French", "ar": "Arabic"}
 
 SYSTEM = """You are a live interpreter for a phone call. Each message is one \
 transcribed utterance (from speech recognition, so it may lack punctuation or \
@@ -40,10 +38,6 @@ class Translations(BaseModel):
 class TranslationResult(BaseModel):
     source_lang: Literal["en", "fr"]
     translations: Translations
-
-
-class TranslationError(Exception):
-    """User-facing translation failure."""
 
 
 class Translator:
