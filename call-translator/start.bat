@@ -13,11 +13,7 @@ if not exist .venv\Scripts\python.exe (
   .venv\Scripts\python.exe -m pip install --upgrade pip
   .venv\Scripts\python.exe -m pip install -r requirements.txt
 )
-if not exist .env (
-  copy .env.example .env >nul
-  echo Created .env - add your ANTHROPIC_API_KEY to it, then run start.bat again.
-  notepad .env
-)
+if not exist .env copy .env.example .env >nul
 
 call .venv\Scripts\activate.bat
 set PORT=8000

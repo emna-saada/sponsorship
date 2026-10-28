@@ -58,16 +58,19 @@ function onStatus(s) {
     return;
   }
   if (!s.model_ready) {
-    setPill(`Loading Whisper "${s.whisper}"… (first run downloads the model)`, "warn");
+    setPill(`Loading speech and translation models… (first run downloads ~2 GB)`, "warn");
     startBtn.disabled = true;
     return;
   }
   startBtn.disabled = false;
-  if (!s.api_key) {
+  if (s.translator_error) {
+    setPill(`Whisper ${s.whisper} · ${s.device} · translation unavailable`, "warn");
+    showBanner(s.translator_error + " Transcription still works.", "warn");
+  } else if (!s.api_key) {
     setPill(`Whisper ${s.whisper} · ${s.device} · no API key`, "warn");
-    showBanner("Missing API key: copy .env.example to .env, set ANTHROPIC_API_KEY, then restart. Transcription works, translation won't.", "warn");
+    showBanner("Missing API key: set ANTHROPIC_API_KEY in .env (or use the free TRANSLATOR=local), then restart. Transcription works, translation won't.", "warn");
   } else {
-    setPill(`Whisper ${s.whisper} · ${s.device} · ${s.claude_model}`, "ok");
+    setPill(`Whisper ${s.whisper} · ${s.device} · ${s.translator_model}`, "ok");
   }
 }
 
@@ -127,7 +130,7 @@ async function start() {
     return;
   }
   hideBanner();
-  if (status && !status.api_key) onStatus(status);
+  if (status && (!status.api_key || status.translator_error)) onStatus(status);
   await listMics(); // labels become available after permission is granted
 
   const ctx = new AudioContext();

@@ -9,7 +9,7 @@ if [ ! -d .venv ]; then
   .venv/bin/pip install --upgrade pip
   .venv/bin/pip install -r requirements.txt
 fi
-[ -f .env ] || { cp .env.example .env; echo "Created .env - add your ANTHROPIC_API_KEY to it."; }
+[ -f .env ] || cp .env.example .env
 
 source .venv/bin/activate
 PORT=$(grep -E '^PORT=' .env | cut -d= -f2); PORT=${PORT:-8000}

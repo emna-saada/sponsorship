@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .segmenter import Segment, Segmenter
+from .local_translator import LocalTranslator
 from .transcriber import Transcriber
 from .translator import TranslationError, Translator
 
@@ -32,7 +33,7 @@ STATIC = config.ROOT / "static"
 # Whisper is CPU/GPU heavy and not meant for concurrent calls: one worker thread.
 whisper_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="whisper")
 state: dict = {"transcriber": None, "load_error": None, "ready": asyncio.Event()}
-translator = Translator()
+translator = LocalTranslator() if config.TRANSLATOR != "claude" else Translator()
 
 
 def _load_model() -> None:
@@ -41,11 +42,13 @@ def _load_model() -> None:
     except Exception as e:  # noqa: BLE001 - surfaced to the UI
         log.exception("Failed to load Whisper")
         state["load_error"] = f"Could not load Whisper model '{config.WHISPER_MODEL}': {e}"
+    if isinstance(translator, LocalTranslator):
+        translator.load()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if not translator.ready:
+    if config.TRANSLATOR == "claude" and not translator.ready:
         log.warning("ANTHROPIC_API_KEY is not set - transcription will work, translation will not.")
     loop = asyncio.get_running_loop()
     task = loop.run_in_executor(whisper_pool, _load_model)
@@ -71,8 +74,10 @@ def _status() -> dict:
         "load_error": state["load_error"],
         "whisper": config.WHISPER_MODEL,
         "device": t.device if t else None,
+        "translator": config.TRANSLATOR if config.TRANSLATOR == "claude" else "local",
         "api_key": translator.ready,
-        "claude_model": translator.model,
+        "translator_model": translator.model,
+        "translator_error": getattr(translator, "load_error", None),
     }
 
 

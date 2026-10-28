@@ -1,4 +1,4 @@
-"""Run the full pipeline (VAD -> Whisper -> Claude) on audio files and print timings.
+"""Run the full pipeline (VAD -> Whisper -> translation) on audio files and print timings.
 
 Usage (from the call-translator folder, venv active):
     python -m tests.try_samples english.wav french.mp3
@@ -11,24 +11,50 @@ import asyncio
 import sys
 import time
 
-from faster_whisper import decode_audio
+import av
+import numpy as np
 
+from app import config
+from app.local_translator import LocalTranslator
 from app.segmenter import Segmenter
 from app.transcriber import Transcriber
 from app.translator import TranslationError, Translator
+
+
+def decode_audio(path: str) -> np.ndarray:
+    """Decode any audio file to 16 kHz mono float32."""
+    resampler = av.AudioResampler(format="s16", layout="mono", rate=16000)
+    chunks = []
+    with av.open(path) as container:
+        for frame in container.decode(audio=0):
+            for out in resampler.resample(frame):
+                chunks.append(out.to_ndarray().reshape(-1))
+        for out in resampler.resample(None):
+            chunks.append(out.to_ndarray().reshape(-1))
+    return np.concatenate(chunks).astype(np.float32) / 32768.0
 
 
 async def main(paths: list[str]) -> None:
     t0 = time.perf_counter()
     stt = Transcriber()
     print(f"Whisper loaded on {stt.device} in {time.perf_counter() - t0:.1f}s")
-    tr = Translator()
+    if config.TRANSLATOR == "claude":
+        tr = Translator()
+    else:
+        t0 = time.perf_counter()
+        tr = LocalTranslator()
+        tr.load()
+        if tr.load_error:
+            print(tr.load_error)
+            tr.ready = False
+        else:
+            print(f"{tr.model} loaded in {time.perf_counter() - t0:.1f}s")
     if not tr.ready:
-        print("ANTHROPIC_API_KEY not set - showing transcription only.")
+        print("Translation unavailable - showing transcription only.")
 
     for path in paths:
         print(f"\n=== {path}")
-        audio = decode_audio(path, sampling_rate=16000)
+        audio = decode_audio(path)
         seg = Segmenter()
         segments = []
         for i in range(0, len(audio), 4000):
