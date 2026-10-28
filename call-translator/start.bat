@@ -18,7 +18,8 @@ if not exist .env copy .env.example .env >nul
 call .venv\Scripts\activate.bat
 set PORT=8000
 for /f "tokens=2 delims==" %%a in ('findstr /b "PORT=" .env') do set PORT=%%a
-start "" cmd /c "timeout /t 3 >nul & start http://localhost:%PORT%"
+REM Open the browser once the server answers (up to ~2 minutes).
+start "" /min powershell -NoProfile -Command "for($i=0;$i -lt 120;$i++){try{Invoke-WebRequest -UseBasicParsing http://127.0.0.1:%PORT%/api/status | Out-Null; Start-Process http://localhost:%PORT%; break}catch{Start-Sleep 1}}"
 echo Starting on http://localhost:%PORT%  (close this window to stop)
 python -m app.server
 pause

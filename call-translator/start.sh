@@ -14,6 +14,6 @@ fi
 source .venv/bin/activate
 PORT=$(grep -E '^PORT=' .env | cut -d= -f2); PORT=${PORT:-8000}
 URL="http://localhost:$PORT"
-( sleep 3; if command -v open >/dev/null; then open "$URL"; elif command -v xdg-open >/dev/null; then xdg-open "$URL"; fi ) >/dev/null 2>&1 &
+( for i in $(seq 1 120); do curl -s -o /dev/null "http://127.0.0.1:$PORT/api/status" && break; sleep 1; done; if command -v open >/dev/null; then open "$URL"; elif command -v xdg-open >/dev/null; then xdg-open "$URL"; fi ) >/dev/null 2>&1 &
 echo "Starting on $URL (Ctrl+C to stop)"
 exec python -m app.server
