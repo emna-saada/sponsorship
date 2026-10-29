@@ -77,7 +77,7 @@ def _status() -> dict:
         "model_ready": t is not None,
         "loading": not state["ready"].is_set(),
         "load_error": state["load_error"],
-        "whisper": config.WHISPER_MODEL,
+        "whisper": t.name if t else config.WHISPER_MODEL,
         "device": t.device if t else None,
         "translator": config.TRANSLATOR if config.TRANSLATOR == "claude" else "local",
         "api_key": translator.ready,
@@ -89,6 +89,10 @@ def _status() -> dict:
 @app.get("/api/status")
 async def status():
     return _status()
+
+
+GAP = np.zeros(int(0.3 * config.SAMPLE_RATE), dtype=np.float32)
+MERGE_LIMIT = 20 * config.SAMPLE_RATE  # keep merged audio well under Whisper's 30 s window
 
 
 class Session:
@@ -132,10 +136,16 @@ class Session:
             t = state["transcriber"]
             if t is None:
                 continue
-            ended = time.perf_counter()
+            ended = seg.created
+            audio = seg.audio
+            # If the PC fell behind, transcribe all waiting segments in one pass:
+            # Whisper's cost is mostly fixed per call, so this catches up quickly.
+            while not self.queue.empty() and len(audio) < MERGE_LIMIT:
+                nxt = self.queue.get_nowait()
+                audio = np.concatenate([audio, GAP, nxt.audio])
             await self.send({"type": "vad", "processing": True})
             try:
-                result = await loop.run_in_executor(whisper_pool, t.transcribe, seg.audio)
+                result = await loop.run_in_executor(whisper_pool, t.transcribe, audio)
             except Exception as e:  # noqa: BLE001
                 log.exception("Transcription failed")
                 await self.send({"type": "error", "message": f"Transcription failed: {e}"})

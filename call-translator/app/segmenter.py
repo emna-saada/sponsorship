@@ -6,7 +6,8 @@ a segment is emitted once speech is followed by SILENCE_MS of silence, or the
 buffer reaches MAX_SEGMENT_S.
 """
 
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 
 import numpy as np
 from faster_whisper.vad import VadOptions, get_speech_timestamps
@@ -21,6 +22,7 @@ PAD = int(0.2 * SR)  # audio kept before/after speech so words aren't clipped
 class Segment:
     audio: np.ndarray  # float32 mono 16 kHz
     speech_seconds: float
+    created: float = field(default_factory=time.perf_counter)  # when the speaker paused
 
 
 class Segmenter:

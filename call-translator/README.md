@@ -19,8 +19,9 @@ reachable from your network.
    (tick **"Add python.exe to PATH"** in the installer).
 2. Double-click **`start.bat`**. The first run creates a virtual environment in `.venv`
    and installs `requirements.txt` (a few minutes).
-3. The browser opens <http://localhost:8000>. The first start also downloads the models
-   (~500 MB Whisper `small` + ~650 MB NLLB 600M, once), so wait until the status pill turns green.
+3. The browser opens <http://localhost:8000>. The first start also downloads the models once
+   (CPU: ~1.2 GB; with an NVIDIA GPU: ~4.5 GB including NVIDIA's libraries), so wait until the
+   status pill turns green.
 
 After that, just double-click `start.bat` whenever you need it. Close the console window to stop.
 
@@ -54,14 +55,16 @@ python -m app.server            # then open http://localhost:8000
 
 ## Settings (`.env`)
 
+Everything works with the defaults; `.env` is created from `.env.example` on first start.
+
 | Variable | Default | Meaning |
 |---|---|---|
-| `TRANSLATOR` | `local` | `local` = free offline NLLB. `claude` = paid Claude API (needs a key). |
-| `NLLB_MODEL` | `osa911/nllb-200-distilled-600M-ct2-int8` | Use `OpenNMT/nllb-200-distilled-1.3B-ct2-int8` for slightly better translations (~2× slower on CPU, fine with a GPU). |
-| `ANTHROPIC_API_KEY` | – | Only for `TRANSLATOR=claude` (also run `pip install anthropic`). Never commit `.env`. |
-| `CLAUDE_MODEL` | `claude-haiku-5-5` | Only for `TRANSLATOR=claude`. |
-| `WHISPER_MODEL` | `small` | `medium` is more accurate but ~2–3× slower (use with a GPU). |
-| `WHISPER_DEVICE` | `auto` | `auto` uses an NVIDIA GPU (CUDA, float16) if available, else CPU (int8). |
+| `WHISPER_MODEL` | `auto` | `auto` = `large-v3-turbo` on an NVIDIA GPU (much more accurate), `small` on CPU. Or force `small` / `medium` / `large-v3-turbo`. |
+| `NLLB_MODEL` | `auto` | `auto` = NLLB 1.3B on GPU (more accurate), 600M on CPU (faster). |
+| `WHISPER_DEVICE` | `auto` | `auto` uses the NVIDIA GPU if it works, else CPU. Force `cpu` to skip the GPU. |
+| `CPU_THREADS` | half your cores (min 4) | Threads per model on CPU. |
+| `TRANSLATOR` | `local` | `local` = free offline NLLB. `claude` = paid Claude API (needs a key + `pip install anthropic`). |
+| `ANTHROPIC_API_KEY` / `CLAUDE_MODEL` | – / `claude-haiku-5-5` | Only for `TRANSLATOR=claude`. Never commit `.env`. |
 | `SILENCE_MS` | `600` | Pause that ends a sentence. |
 | `MAX_SEGMENT_S` | `10` | Long monologues are cut at the best pause before this length. |
 | `VAD_THRESHOLD` | `0.5` | Raise to `0.6`–`0.7` if background noise triggers entries. |
@@ -69,16 +72,13 @@ python -m app.server            # then open http://localhost:8000
 
 Restart the app after editing `.env`.
 
-### GPU (optional)
+### GPU (NVIDIA)
 
-With an NVIDIA GPU, Whisper and NLLB also need the CUDA 12 cuBLAS and cuDNN 9 libraries. The
-simplest way on Windows is:
-
-```bat
-.venv\Scripts\pip install nvidia-cublas-cu12 nvidia-cudnn-cu12
-```
-
-If the GPU libraries are missing, the app logs a warning and falls back to the CPU automatically.
+Nothing to do: when `start.bat` finds an NVIDIA card it installs NVIDIA's cuBLAS and cuDNN
+libraries into `.venv` (`requirements-gpu.txt`, ~1.3 GB once), and the app picks the most
+accurate models that fit. If the GPU can't be used (old driver, too little memory), the app
+steps down automatically: smaller model on GPU, then CPU. The status pill shows what it chose.
+If the GPU fails, updating the NVIDIA driver usually fixes it.
 
 ## How it works
 
@@ -128,17 +128,15 @@ translations and timings.
 
 ## Measured performance
 
-Tested on a 4-core cloud CPU (no GPU) with synthetic English and French speech:
+Tested with synthetic English and French speech (robotic text-to-speech voice):
 
-| Step | Time per sentence |
-|---|---|
-| Whisper `small` (speech → text) | 2.1–2.8 s |
-| NLLB 600M (text → 2 languages) | 1.1–1.6 s |
-| **Pause → translation on screen** (live, in the browser) | **~3.8–5.3 s** (the original text shows ~1.5 s earlier) |
+| Setup | Accuracy on the test clips | Pause → translation |
+|---|---|---|
+| CPU: Whisper `small` + NLLB 600M (4-core cloud CPU) | English word-perfect; French partly garbled | ~5–7.5 s live |
+| GPU models: Whisper `large-v3-turbo` + NLLB 1.3B | English **and French word-perfect**, exact translations | ~13 s on that CPU — that's why it's used only on a GPU, where it should take ~1–2 s (not measured: no GPU in the test environment) |
 
-That machine was also running the browser on the same 4 cores. A modern 6–8-core desktop CPU
-should land around 3–4 s, and an NVIDIA GPU brings it under 2 s. Clear human speech transcribes
-much better than the robotic test voice used here (which garbled some French words).
+If you fall behind (slow PC, long talking), waiting sentences are transcribed together in one
+pass, so the app catches up instead of lagging further and further.
 
 ## License note
 

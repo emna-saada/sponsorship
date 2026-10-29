@@ -50,25 +50,36 @@ def pick_device() -> tuple[str, str]:
     return "cpu", "int8"
 
 
+def _candidates(want: str, gpu_model: str, cpu_model: str) -> list[tuple[str, str]]:
+    """(model, device) pairs to try in order: best quality first, CPU last."""
+    device, _ = pick_device()
+    gpu = device == "cuda"
+    if want != "auto":
+        return [(want, "cuda"), (want, "cpu")] if gpu else [(want, "cpu")]
+    if gpu:
+        return [(gpu_model, "cuda"), (cpu_model, "cuda"), (cpu_model, "cpu")]
+    return [(cpu_model, "cpu")]
+
+
 class Transcriber:
     def __init__(self, model_name: str = config.WHISPER_MODEL):
-        candidates = [pick_device()]
-        if candidates[0][0] != "cpu":
-            candidates.append(("cpu", "int8"))
-        for device, compute in candidates:
+        for name, device in _candidates(model_name, config.WHISPER_GPU, config.WHISPER_CPU):
+            compute = "int8_float16" if device == "cuda" else "int8"
             try:
-                self._load(model_name, device, compute)
-                # Warm up (also proves the GPU libraries actually work, e.g. cuBLAS/cuDNN DLLs).
+                self._load(name, device, compute)
+                # Warm up (also proves the GPU libraries and memory actually work).
                 self.transcribe(np.zeros(config.SAMPLE_RATE, dtype=np.float32))
                 break
             except Exception as e:
                 if device == "cpu":
                     raise
-                log.warning("Whisper failed on %s (%s); falling back to CPU int8", device, e)
-        log.info("Whisper '%s' ready on %s", model_name, self.device)
+                log.warning("Whisper '%s' failed on %s (%s); trying a lighter option", name, device, e)
+        log.info("Whisper '%s' ready on %s", self.name, self.device)
 
     def _load(self, model_name: str, device: str, compute: str) -> None:
-        self.model = WhisperModel(model_name, device=device, compute_type=compute)
+        self.model = WhisperModel(model_name, device=device, compute_type=compute, cpu_threads=config.CPU_THREADS)
+        self.name = model_name
+        self.on_gpu = device == "cuda"
         self.device = f"{device}/{compute}"
         self.tokenizers = {
             lang: Tokenizer(self.model.hf_tokenizer, multilingual=True, task="transcribe", language=lang)
@@ -108,9 +119,10 @@ class Transcriber:
         lang = "en" if en >= fr else "fr"
         lang_prob = max(en, fr) / ((en + fr) or 1.0)
 
-        # Greedy first (fast); fall back to beam search if the result looks unreliable.
-        text, avg_logprob, no_speech = self._decode(encoder_output, lang, 1)
-        if get_compression_ratio(text) > 2.4 or avg_logprob < -1.0:
+        # GPU: beam search always (cheap there, more accurate).
+        # CPU: greedy first; beam search only if the result looks unreliable.
+        text, avg_logprob, no_speech = self._decode(encoder_output, lang, config.WHISPER_BEAM_SIZE if self.on_gpu else 1)
+        if not self.on_gpu and (get_compression_ratio(text) > 2.4 or avg_logprob < -1.0):
             text, avg_logprob, no_speech = self._decode(encoder_output, lang, config.WHISPER_BEAM_SIZE)
 
         if no_speech > 0.6 and avg_logprob < -0.7:

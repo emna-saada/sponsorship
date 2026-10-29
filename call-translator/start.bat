@@ -11,7 +11,18 @@ if not exist .venv\Scripts\python.exe (
     exit /b 1
   )
   .venv\Scripts\python.exe -m pip install --upgrade pip
-  .venv\Scripts\python.exe -m pip install -r requirements.txt
+)
+REM Install/update packages (quick when nothing changed).
+.venv\Scripts\python.exe -m pip install -q -r requirements.txt
+if errorlevel 1 (
+  echo Package installation failed - check your internet connection and run start.bat again.
+  pause
+  exit /b 1
+)
+REM NVIDIA graphics card found: add the CUDA libraries so the GPU can be used (~1.3 GB, once).
+where nvidia-smi >nul 2>nul && (
+  echo NVIDIA GPU detected - installing GPU libraries if needed...
+  .venv\Scripts\python.exe -m pip install -q -r requirements-gpu.txt
 )
 if not exist .env copy .env.example .env >nul
 

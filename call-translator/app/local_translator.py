@@ -15,7 +15,7 @@ from huggingface_hub import hf_hub_download, snapshot_download
 from tokenizers import Tokenizer
 
 from . import config
-from .transcriber import pick_device
+from .transcriber import _candidates
 from .common import TARGETS, TranslationError
 
 log = logging.getLogger("local_translator")
@@ -30,7 +30,7 @@ _SENTENCE_END = re.compile(r"(?<=[.!?…])\s+")
 class LocalTranslator:
     def __init__(self, repo: str = config.NLLB_MODEL):
         self.repo = repo
-        self.model = f"NLLB ({repo.split('/')[-1]})"
+        self.model = "NLLB"
         self.ready = True  # no API key needed; load errors are reported per request
         self.load_error: str | None = None
         self.translator: ctranslate2.Translator | None = None
@@ -40,26 +40,27 @@ class LocalTranslator:
     def load(self) -> None:
         """Download (first run only) and load the model. Call from a worker thread."""
         try:
-            path = Path(snapshot_download(self.repo))
-            tok_file = path / "tokenizer.json"
-            if not tok_file.exists():
-                tok_file = Path(hf_hub_download(TOKENIZER_REPO, "tokenizer.json"))
-            self.tokenizer = Tokenizer.from_file(str(tok_file))
-
-            device, _ = pick_device()
-            candidates = [(device, "int8_float16")] if device == "cuda" else []
-            candidates.append(("cpu", "int8"))
-            for device, compute in candidates:
+            for repo, device in _candidates(self.repo, config.NLLB_GPU, config.NLLB_CPU):
+                compute = "int8_float16" if device == "cuda" else "int8"
                 try:
-                    self.translator = ctranslate2.Translator(str(path), device=device, compute_type=compute)
-                    self._translate_sync("Hello.", "en")  # warm-up; also proves GPU libraries work
+                    path = Path(snapshot_download(repo))
+                    tok_file = path / "tokenizer.json"
+                    if not tok_file.exists():
+                        tok_file = Path(hf_hub_download(TOKENIZER_REPO, "tokenizer.json"))
+                    self.tokenizer = Tokenizer.from_file(str(tok_file))
+                    self.translator = ctranslate2.Translator(
+                        str(path), device=device, compute_type=compute, intra_threads=config.CPU_THREADS
+                    )
+                    self._translate_sync("Hello.", "en")  # warm-up; also proves GPU libraries/memory work
                     break
-                except Exception as e:  # e.g. cuBLAS DLL missing -> CPU
+                except Exception as e:  # e.g. cuBLAS DLL missing or GPU out of memory
                     if device == "cpu":
                         raise
-                    log.warning("NLLB failed on %s (%s); falling back to CPU int8", device, e)
-            self.model = f"NLLB {self.repo.split('/')[-1]} · {device}"
-            log.info("Loaded %s on %s/%s", self.repo, device, compute)
+                    log.warning("NLLB '%s' failed on %s (%s); trying a lighter option", repo, device, e)
+            self.repo = repo
+            size = "1.3B" if "1.3B" in repo else "600M" if "600M" in repo else repo.split("/")[-1]
+            self.model = f"NLLB {size} · {device}"
+            log.info("Loaded %s on %s/%s", repo, device, compute)
         except Exception as e:  # noqa: BLE001 - surfaced to the UI
             log.exception("Failed to load translation model")
             self.load_error = f"Could not load translation model '{self.repo}': {e}"

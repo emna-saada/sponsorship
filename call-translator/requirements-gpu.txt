@@ -1,0 +1,3 @@
+# NVIDIA libraries for GPU speed-up (installed automatically by start.bat when an NVIDIA card is found)
+nvidia-cublas-cu12
+nvidia-cudnn-cu12>=9,<10
