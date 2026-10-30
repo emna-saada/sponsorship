@@ -18,6 +18,12 @@ TIMEOUT = 25
 QUERIES = ["gis intern", "geospatial intern", "remote sensing intern", "geoinformatics", "gis", "geospatial"]
 
 
+def queries(cfg) -> list[str]:
+    """Search phrases: each resume track's queries, or the defaults."""
+    out = [q for t in cfg.raw.get("tracks", []) for q in t.get("queries", [])]
+    return list(dict.fromkeys(out)) or QUERIES
+
+
 def strip_html(text: str) -> str:
     text = re.sub(r"<(br|/p|/li|/div)[^>]*>", "\n", text or "", flags=re.I)
     text = re.sub(r"<[^>]+>", " ", text)
@@ -54,7 +60,7 @@ def arbeitnow(cfg) -> list[Opportunity]:
 
 def remotive(cfg) -> list[Opportunity]:
     out = []
-    for q in QUERIES:
+    for q in queries(cfg):
         for j in _get("https://remotive.com/api/remote-jobs", search=q).get("jobs", []):
             out.append(Opportunity(
                 title=j["title"], company=j["company_name"],
@@ -98,7 +104,7 @@ def adzuna(cfg) -> list[Opportunity]:
         return []
     out = []
     for country in cfg.search.get("adzuna_countries", []):
-        for what in ("gis intern", "geospatial internship", "remote sensing internship"):
+        for what in queries(cfg):
             try:
                 data = _get(f"https://api.adzuna.com/v1/api/jobs/{country}/search/1",
                             app_id=app_id, app_key=app_key, what=what, results_per_page=50)
@@ -112,6 +118,62 @@ def adzuna(cfg) -> list[Opportunity]:
                     url=j.get("redirect_url", ""), description=strip_html(j.get("description", "")),
                     source=f"adzuna-{country}", posted=str(j.get("created", ""))[:10],
                 ))
+    return out
+
+
+def reed(cfg) -> list[Opportunity]:
+    """Reed.co.uk, the largest UK job board (free key: reed.co.uk/developers/jobseeker)."""
+    key = cfg.secret("REED_API_KEY")
+    if not key:
+        print("  reed: skipped (set REED_API_KEY for UK coverage)")
+        return []
+    out = []
+    for q in queries(cfg):
+        r = requests.get("https://www.reed.co.uk/api/1.0/search", params={"keywords": q, "resultsToTake": 100},
+                         auth=(key, ""), headers={"User-Agent": UA}, timeout=TIMEOUT)
+        r.raise_for_status()
+        for j in r.json().get("results", []):
+            out.append(Opportunity(
+                title=j.get("jobTitle", ""), company=j.get("employerName", ""),
+                location=f"{j.get('locationName', '')}, United Kingdom", url=j.get("jobUrl", ""),
+                description=strip_html(j.get("jobDescription", "")) + (
+                    f" Salary {j['minimumSalary']}-{j.get('maximumSalary')} GBP" if j.get("minimumSalary") else ""),
+                source="reed", posted=str(j.get("date", ""))[:10],
+            ))
+    return out
+
+
+def francetravail(cfg) -> list[Opportunity]:
+    """France Travail (ex Pôle emploi) official API (free app: francetravail.io)."""
+    cid, secret = cfg.secret("FRANCETRAVAIL_CLIENT_ID"), cfg.secret("FRANCETRAVAIL_CLIENT_SECRET")
+    if not (cid and secret):
+        print("  francetravail: skipped (set FRANCETRAVAIL_CLIENT_ID and FRANCETRAVAIL_CLIENT_SECRET for France)")
+        return []
+    tok = requests.post("https://entreprise.francetravail.fr/connexion/oauth2/access_token",
+                        params={"realm": "/partenaire"},
+                        data={"grant_type": "client_credentials", "client_id": cid, "client_secret": secret,
+                              "scope": "api_offresdemploiv2 o2dsoffre"}, timeout=TIMEOUT)
+    tok.raise_for_status()
+    headers = {"Authorization": f"Bearer {tok.json()['access_token']}", "User-Agent": UA}
+    out = []
+    for q in ("stage SIG", "stage géomatique", "stage télédétection", "stage LiDAR", "stage data science",
+              "stage fin d'études SIG"):
+        r = requests.get("https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search",
+                         params={"motsCles": q, "range": "0-149"}, headers=headers, timeout=TIMEOUT)
+        if r.status_code == 204:  # no results
+            continue
+        r.raise_for_status()
+        for j in r.json().get("resultats", []):
+            contact = j.get("contact") or {}
+            out.append(Opportunity(
+                title=j.get("intitule", ""), company=(j.get("entreprise") or {}).get("nom", "") or "Entreprise (France Travail)",
+                location=f"{(j.get('lieuTravail') or {}).get('libelle', '')}, France",
+                url=(j.get("origineOffre") or {}).get("urlOrigine", ""),
+                description=(j.get("description") or "") + " " + ((j.get("salaire") or {}).get("libelle") or ""),
+                company_website=(j.get("entreprise") or {}).get("url", "") or "",
+                contact_email=(contact.get("courriel") or "") if "@" in (contact.get("courriel") or "") else "",
+                source="francetravail", posted=str(j.get("dateCreation", ""))[:10],
+            ))
     return out
 
 
@@ -160,18 +222,20 @@ def ats(cfg) -> list[Opportunity]:
 
 def import_csv(path: Path) -> list[Opportunity]:
     """Opportunities you collected yourself (LinkedIn, EURAXESS, school job board, a friend...).
-    Columns: title,company,location,url,description,company_website,contact_email"""
+    Columns: title,company,location,url,description,company_website,contact_email
+    Optional: track (data/geoinformatics/gis/lidar), company_linkedin"""
     with open(path, newline="", encoding="utf-8") as f:
         return [Opportunity(
             title=r.get("title") or "Final-year internship (spontaneous application)",
             company=r["company"], location=r.get("location", ""), url=r.get("url", ""),
             description=r.get("description", ""), company_website=r.get("company_website", ""),
             contact_email=(r.get("contact_email") or "").strip(), source="manual",
+            track=(r.get("track") or "").strip(), company_linkedin=(r.get("company_linkedin") or "").strip(),
         ) for r in csv.DictReader(f) if r.get("company")]
 
 
-SOURCES = {"arbeitnow": arbeitnow, "remotive": remotive, "remoteok": remoteok,
-           "jobicy": jobicy, "adzuna": adzuna, "ats": ats}
+SOURCES = {"arbeitnow": arbeitnow, "remotive": remotive, "remoteok": remoteok, "jobicy": jobicy,
+           "adzuna": adzuna, "reed": reed, "francetravail": francetravail, "ats": ats}
 
 
 def fetch_all(cfg) -> list[Opportunity]:

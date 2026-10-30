@@ -1,53 +1,109 @@
-# Copy to config.toml and fill in. Secrets (passwords, API keys) go in environment
-# variables, never in this file:
-#   SMTP_PASSWORD        app password of your mailbox (Gmail: myaccount.google.com/apppasswords)
-#   ADZUNA_APP_ID / ADZUNA_APP_KEY   free keys from developer.adzuna.com (19 countries)
-#   ANTHROPIC_API_KEY    optional, tailors each cover letter with Claude
+# Copy to config.toml (python -m hunter init) and fill in your details.
+# Secrets go in environment variables, never in this file:
+#   SMTP_PASSWORD                   Gmail app password (myaccount.google.com/apppasswords)
+#   ANTHROPIC_API_KEY               AI web research + tailored letters (console.anthropic.com)
+#   ADZUNA_APP_ID / ADZUNA_APP_KEY  free, developer.adzuna.com (UK, France, Switzerland)
+#   REED_API_KEY                    free, reed.co.uk/developers/jobseeker (UK)
+#   FRANCETRAVAIL_CLIENT_ID / FRANCETRAVAIL_CLIENT_SECRET   free, francetravail.io (France)
 
 [profile]
 name = "Your Name"
-email = "you@example.com"
+email = "you@gmail.com"
 phone = "+216 00 000 000"
-linkedin = "https://www.linkedin.com/in/your-handle"
+linkedin = "linkedin.com/in/your-handle"
 school = "Your Engineering School"
-degree = "Engineering degree in Geoinformatics"
+degree = "Engineering Degree in Geomatics Engineering"
 graduation = "2027"
 internship_duration = "4- to 6-month"
-internship_start = "February 2027"
-resume_pdf = "data/resume.pdf"
+internship_start = "January or February 2027"
 # Optional extra PDF attached as-is. If empty, a tailored cover letter PDF is generated per company.
 static_cover_letter_pdf = ""
-# Short pitch used in the generated letters, in your own words.
-pitch = """My focus is GIS, remote sensing and GeoAI. I build spatial data pipelines with Python, PostGIS and GDAL, and I have trained \
-deep-learning models on satellite imagery."""
-# Language of generated letters: "en" or "fr"
+# Letters are written in English.
 letter_language = "en"
 
+# ---------------------------------------------------------------------------
+# One resume per specialty. Each offer is matched to the track whose keywords it
+# fits best, and that resume + pitch are sent. Override one offer with:
+#   python -m hunter track <id> lidar
+# Delete the tracks you do not need; keep at least one.
+# ---------------------------------------------------------------------------
+
+[[tracks]]
+name = "geoinformatics"
+label = "Geoinformatics, Earth Observation & GeoAI"
+resume_pdf = "data/resume_geoinformatics.pdf"
+focus = "Earth observation and geospatial AI"
+keywords = ["geoinformatics", "geomatics", "géomatique", "geospatial", "géospatial", "GeoAI",
+  "geospatial AI", "remote sensing", "télédétection", "earth observation", "observation de la Terre",
+  "satellite", "satellite imagery", "imagerie satellitaire", "Sentinel", "Sentinel-2", "Landsat",
+  "Copernicus", "SAR", "InSAR", "hyperspectral", "multispectral", "Earth Engine", "land cover",
+  "land use", "change detection", "environmental monitoring", "biodiversity", "wetland",
+  "climate", "agriculture", "forest", "semantic segmentation", "spatio-temporal"]
+queries = ["remote sensing intern", "earth observation internship", "GeoAI intern", "stage télédétection"]
+pitch = """Two or three concrete results from this resume, in your own words."""
+
+[[tracks]]
+name = "gis"
+label = "GIS, Spatial Analysis & Web Mapping"
+resume_pdf = "data/resume_gis.pdf"
+focus = "GIS and spatial analysis"
+keywords = ["GIS", "SIG", "QGIS", "ArcGIS", "PostGIS", "spatial analysis", "analyse spatiale",
+  "spatial data", "cartography", "cartographie", "web mapping", "WebGIS", "web GIS", "MapLibre",
+  "Leaflet", "OpenLayers", "geodatabase", "spatial database", "cadastre", "urban planning",
+  "urbanisme", "land administration", "multicriteria", "géomaticien", "GIS analyst", "geodata"]
+queries = ["GIS intern", "GIS internship", "stage SIG", "spatial analyst intern"]
+pitch = """Two or three concrete results from this resume, in your own words."""
+
+[[tracks]]
+name = "lidar"
+label = "LiDAR, Point Clouds & 3D Geodata"
+resume_pdf = "data/resume_lidar.pdf"
+focus = "LiDAR, 3D mapping and digital twins"
+keywords = ["LiDAR", "lidar", "point cloud", "point clouds", "nuage de points", "laser scanning",
+  "photogrammetry", "photogrammétrie", "3D", "3D mapping", "3D city", "digital twin",
+  "jumeau numérique", "BIM", "CityGML", "CityJSON", "3D Tiles", "Cesium", "mobile mapping",
+  "surveying", "topography", "topographie", "géomètre", "GNSS", "drone", "UAV", "DSM", "DTM",
+  "reality capture", "mesh"]
+queries = ["LiDAR intern", "point cloud internship", "photogrammetry intern", "digital twin intern"]
+pitch = """Two or three concrete results from this resume, in your own words."""
+
+[[tracks]]
+name = "data"
+label = "Data Science & Machine Learning"
+resume_pdf = "data/resume_data.pdf"
+focus = "data science and machine learning"
+keywords = ["data science", "data scientist", "machine learning", "deep learning", "data analyst",
+  "data analysis", "data engineer", "data engineering", "business intelligence", "AI", "artificial intelligence",
+  "intelligence artificielle", "computer vision", "NLP", "LLM", "RAG", "MLOps", "statistics",
+  "statistiques", "big data", "data pipeline", "ETL", "analytics", "forecasting"]
+queries = ["data science intern", "machine learning intern", "stage data science", "AI research intern"]
+pitch = """Two or three concrete results from this resume, in your own words."""
+
 [search]
-# Domain keywords: a job must match at least one of these.
-domain_keywords = [
-  "geoinformatics", "geomatics", "géomatique", "GIS", "SIG", "geospatial", "géospatial",
-  "GeoAI", "remote sensing", "télédétection", "earth observation", "satellite imagery",
-  "photogrammetry", "LiDAR", "cartography", "spatial data", "spatial analysis",
-  "QGIS", "ArcGIS", "PostGIS", "GDAL", "Geodaten", "Fernerkundung", "geodesy", "geodata", "spatial data science",
-]
-# Internship keywords: a job must match at least one of these.
+# Only these countries (plus remote roles open to them). Keys: switzerland, morocco, uk, france, japan.
+target_countries = ["switzerland", "morocco", "uk", "france", "japan"]
+allow_remote = true
+# Drop internships that say they are unpaid; paid / funded ones rank higher.
+require_paid = true
+# Extra domain words on top of the track keywords.
+domain_keywords = ["spatial data science", "geodesy", "geostatistics", "Geodaten", "Fernerkundung"]
 internship_keywords = [
-  "intern", "internship", "offre de stage", "stage de fin", "stage ingénieur", "stagiaire", "PFE", "projet de fin d'études",
-  "fin d'études", "end of studies", "final year", "graduation project", "master thesis",
-  "Praktikum", "Praktikant", "Abschlussarbeit", "prácticas", "becario", "tirocinio", "stagiair",
+  "intern", "internship", "offre de stage", "stage de fin", "stage ingénieur", "stagiaire",
+  "PFE", "projet de fin d'études", "fin d'études", "end of studies", "final year",
+  "graduation project", "master thesis", "research intern", "Praktikum", "Praktikant",
+  "インターン", "インターンシップ",
 ]
-exclude_keywords = ["senior", "principal", "staff engineer", "head of", "director", "10+ years", "5+ years"]
+exclude_keywords = ["senior", "principal", "staff engineer", "head of", "director",
+                    "10+ years", "5+ years", "3+ years", "PhD position", "postdoc"]
 min_score = 45
-# Adzuna country codes searched when keys are set (worldwide coverage).
-adzuna_countries = ["gb", "us", "ca", "au", "de", "fr", "nl", "be", "at", "ch", "es", "it", "pl", "in", "sg", "nz", "za", "br", "mx"]
-# Which public sources to query.
-sources = ["arbeitnow", "remotive", "remoteok", "jobicy", "adzuna", "ats"]
+# Adzuna covers the UK, France and Switzerland (not Morocco or Japan).
+adzuna_countries = ["gb", "fr", "ch"]
+sources = ["arbeitnow", "remotive", "remoteok", "jobicy", "adzuna", "reed", "francetravail", "ats"]
 
 [email]
 smtp_host = "smtp.gmail.com"
 smtp_port = 465            # 465 = SSL, 587 = STARTTLS
-smtp_user = "you@example.com"
+smtp_user = "you@gmail.com"
 daily_limit = 15           # stay low: big bursts get your mailbox flagged as spam
 seconds_between = 90
 # Contact the same company at most once, even through different addresses.
@@ -58,3 +114,4 @@ smtp_probe = false
 [ai]
 enabled = true             # only used when ANTHROPIC_API_KEY is set
 model = "claude-opus-5-5"
+research_effort = "medium" # low = cheaper and faster, high = more thorough

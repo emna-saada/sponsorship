@@ -12,6 +12,7 @@ class Config:
     search: dict
     email: dict
     ai: dict
+    raw: dict = field(default_factory=dict)
     base_dir: Path = field(default=ROOT)
 
     @property
@@ -46,5 +47,6 @@ def load(path: str | Path | None = None) -> Config:
         search=data.get("search", {}),
         email=data.get("email", {}),
         ai=data.get("ai", {}),
+        raw=data,
         base_dir=path.resolve().parent,
     )

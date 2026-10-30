@@ -21,7 +21,13 @@ CREATE TABLE IF NOT EXISTS opportunities (
     email_status TEXT,
     status TEXT DEFAULT 'new',      -- new | approved | rejected | sent | failed
     note TEXT,
-    created TEXT
+    created TEXT,
+    track TEXT,
+    country TEXT,
+    kind TEXT,
+    company_linkedin TEXT,
+    insight TEXT,
+    pay TEXT
 );
 CREATE TABLE IF NOT EXISTS sent_log (
     email TEXT,
@@ -57,6 +63,12 @@ class Opportunity:
     status: str = "new"
     note: str = ""
     created: str = ""
+    track: str = ""          # which resume to send (see tracks.py)
+    country: str = ""        # see geo.py
+    kind: str = ""           # "research" or "professional"
+    company_linkedin: str = ""
+    insight: str = ""        # one verified fact about the company, used in the letter
+    pay: str = ""            # "paid", "unpaid" or "unknown" (see matching.pay_status)
     id: str = field(default="")
 
     def __post_init__(self):
@@ -70,6 +82,11 @@ class DB:
         self.conn = sqlite3.connect(path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        # databases created by older versions lack the newer columns
+        have = {r[1] for r in self.conn.execute("PRAGMA table_info(opportunities)")}
+        for col in ("track", "country", "kind", "company_linkedin", "insight", "pay"):
+            if col not in have:
+                self.conn.execute(f"ALTER TABLE opportunities ADD COLUMN {col} TEXT")
 
     def upsert(self, opp: Opportunity) -> bool:
         """Insert a new opportunity; returns False if it was already known."""

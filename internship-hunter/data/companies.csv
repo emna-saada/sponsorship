@@ -1,30 +1,47 @@
-company,location,company_website,ats,ats_token,description
-Planet,"San Francisco, USA / Berlin, Germany",https://www.planet.com,greenhouse,planetlabs,Earth observation satellite imagery and geospatial analytics
-Mapbox,"Washington DC, USA / Remote",https://www.mapbox.com,greenhouse,mapbox,Mapping platform; geospatial data; cartography; GIS
-CARTO,"Madrid, Spain / Remote",https://carto.com,,,Cloud-native spatial analysis and spatial data science platform; GIS
-Development Seed,"Washington DC, USA / Lisbon, Portugal",https://developmentseed.org,,,Open-source geospatial; earth observation; satellite imagery; GeoAI
-UP42,"Berlin, Germany",https://up42.com,,,Earth observation data marketplace; geospatial; satellite imagery
-EOX IT Services,"Vienna, Austria",https://eox.at,,,Earth observation; remote sensing; geospatial software
-Sinergise (Planet),"Ljubljana, Slovenia",https://www.sinergise.com,,,Sentinel Hub; earth observation; GIS; remote sensing
-Picterra,"Lausanne, Switzerland",https://picterra.ch,,,GeoAI; deep learning on satellite imagery and drone imagery; geospatial
-Kayrros,"Paris, France",https://www.kayrros.com,,,Earth observation; satellite imagery analytics; GeoAI
-Murmuration,"Toulouse, France",https://murmuration-sas.com,,,Earth observation; remote sensing; environmental geospatial data
-Overstory,"Amsterdam, Netherlands",https://www.overstory.com,,,GeoAI; satellite imagery; vegetation; remote sensing
-Blackshark.ai,"Graz, Austria",https://blackshark.ai,,,GeoAI; 3D digital twin from satellite imagery; geospatial
-ICEYE,"Espoo, Finland",https://www.iceye.com,,,SAR satellites; earth observation; remote sensing
-Satellogic,"Montevideo, Uruguay / Barcelona, Spain",https://satellogic.com,,,Earth observation; satellite imagery; geospatial
-SatelliteVu,"London, UK",https://www.satellitevu.com,,,Thermal earth observation; satellite imagery; remote sensing
-Hexagon Geosystems,"Heerbrugg, Switzerland",https://hexagon.com,,,LiDAR; photogrammetry; GIS; geospatial
-Fugro,"Leidschendam, Netherlands",https://www.fugro.com,,,Geo-data; geospatial; LiDAR; remote sensing; mapping
-Esri,"Redlands, USA (and distributors worldwide)",https://www.esri.com,,,ArcGIS; GIS; geospatial
-Bentley Systems,"Exton, USA",https://www.bentley.com,,,Geospatial; digital twin; photogrammetry; GIS
-Airbus Defence and Space Intelligence,"Toulouse, France",https://www.intelligence-airbusds.com,,,Earth observation; satellite imagery; GeoAI
-Gamma Remote Sensing,"Gümligen, Switzerland",https://www.gamma-rs.ch,,,SAR; remote sensing; InSAR; geospatial
-SkyWatch,"Waterloo, Canada",https://www.skywatch.com,,,Earth observation data platform; satellite imagery; geospatial
-Pixxel,"Bangalore, India",https://www.pixxel.space,,,Hyperspectral earth observation; remote sensing; GeoAI
-Ororatech,"Munich, Germany",https://ororatech.com,,,Wildfire earth observation; thermal remote sensing; geospatial
-Spacenus,"Darmstadt, Germany",https://spacenus.com,,,Agriculture earth observation; remote sensing; GeoAI
-Geomatys,"Montpellier, France",https://www.geomatys.com,,,Geospatial software; GIS; earth observation
-Oslandia,"Lyon, France",https://oslandia.com,,,QGIS; PostGIS; open-source GIS
-Camptocamp,"Lausanne, Switzerland",https://camptocamp.com,,,Open-source GIS; geospatial; GeoServer; QGIS
-3Liz,"Montpellier, France",https://www.3liz.com,,,QGIS; Lizmap; GIS
+company,location,company_website,ats,ats_token,track,description
+Picterra,"Lausanne, Switzerland",https://picterra.ch,,,geoinformatics,GeoAI; deep learning on satellite and drone imagery; geospatial startup
+Pix4D,"Prilly, Switzerland",https://www.pix4d.com,,,lidar,Photogrammetry and drone mapping software; 3D point clouds; digital twins
+Gamma Remote Sensing,"Gümligen, Switzerland",https://www.gamma-rs.ch,,,geoinformatics,SAR and InSAR remote sensing; earth observation
+Hexagon Geosystems (Leica),"Heerbrugg, Switzerland",https://leica-geosystems.com,,,lidar,LiDAR; laser scanning; photogrammetry; GNSS; geospatial
+Camptocamp,"Lausanne, Switzerland",https://camptocamp.com,,,gis,Open-source GIS; GeoServer; QGIS; web mapping
+swisstopo (Federal Office of Topography),"Wabern, Switzerland",https://www.swisstopo.admin.ch,,,gis,National mapping agency; GIS; cartography; LiDAR; geodesy
+Meteomatics,"St. Gallen, Switzerland",https://www.meteomatics.com,,,data,Weather data API; data science; geospatial data
+Esri Schweiz,"Zurich, Switzerland",https://www.esri.ch,,,gis,ArcGIS; GIS; spatial analysis
+EPFL ECEO lab (Earth Observation),"Sion, Switzerland",https://www.epfl.ch/labs/eceo/,,,geoinformatics,Research lab; earth observation; machine learning; remote sensing
+ETH Zurich Photogrammetry and Remote Sensing,"Zurich, Switzerland",https://prs.igp.ethz.ch,,,lidar,Research lab; photogrammetry; point clouds; remote sensing; deep learning
+WSL Swiss Federal Research Institute,"Birmensdorf, Switzerland",https://www.wsl.ch,,,geoinformatics,Research institute; remote sensing; LiDAR forests; environmental monitoring
+University of Zurich Remote Sensing Laboratories,"Zurich, Switzerland",https://www.geo.uzh.ch/en/units/rsl.html,,,geoinformatics,University research lab; remote sensing; earth observation; spectroscopy
+Kayrros,"Paris, France",https://www.kayrros.com,,,geoinformatics,Earth observation; satellite imagery analytics; GeoAI; climate
+Murmuration,"Toulouse, France",https://murmuration-sas.com,,,geoinformatics,Earth observation; remote sensing; environmental data
+CLS (Collecte Localisation Satellites),"Ramonville, France",https://www.cls.fr,,,geoinformatics,Satellite earth observation; ocean and environmental monitoring; data science
+Magellium,"Toulouse, France",https://www.magellium.com,,,geoinformatics,Earth observation; image processing; geospatial software
+Geomatys,"Montpellier, France",https://www.geomatys.com,,,gis,Geospatial software; GIS; earth observation data
+Oslandia,"Lyon, France",https://oslandia.com,,,gis,QGIS; PostGIS; open-source GIS; 3D
+3Liz,"Montpellier, France",https://www.3liz.com,,,gis,QGIS; Lizmap; web GIS
+Esri France,"Meudon, France",https://www.esrifrance.fr,,,gis,ArcGIS; GIS; spatial analysis
+LASTIG (IGN research lab),"Saint-Mandé, France",https://www.umr-lastig.fr,,,lidar,Research lab; LiDAR; 3D city models; photogrammetry; geographic information science
+CESBIO,"Toulouse, France",https://www.cesbio.cnrs.fr,,,geoinformatics,Research lab; remote sensing of the biosphere; Sentinel-2; land cover
+UMR TETIS,"Montpellier, France",https://www.umr-tetis.fr,,,geoinformatics,Research unit; remote sensing; spatial information; environment; data science
+Airbus Defence and Space,"Toulouse, France",https://www.airbus.com,,,geoinformatics,Earth observation satellites; satellite imagery; GeoAI
+Ordnance Survey,"Southampton, United Kingdom",https://www.ordnancesurvey.co.uk,,,gis,National mapping agency; GIS; geospatial data; LiDAR
+Satellite Applications Catapult,"Harwell, United Kingdom",https://sa.catapult.org.uk,,,geoinformatics,Earth observation innovation; satellite data; geospatial
+Satellite Vu,"London, United Kingdom",https://www.satellitevu.com,,,geoinformatics,Thermal earth observation; satellite imagery
+Space Intelligence,"Edinburgh, United Kingdom",https://www.space-intelligence.com,,,geoinformatics,Nature and carbon mapping from satellite data; remote sensing; machine learning
+Bluesky International,"Coalville, United Kingdom",https://www.bluesky-world.com,,,lidar,Aerial photography; LiDAR; 3D mapping; geospatial data
+Esri UK,"Aylesbury, United Kingdom",https://www.esriuk.com,,,gis,ArcGIS; GIS; spatial analysis
+Earth-i,"Guildford, United Kingdom",https://earthi.space,,,geoinformatics,Satellite imagery analytics; earth observation; AI
+Rezatec,"Harwell, United Kingdom",https://www.rezatec.com,,,data,Geospatial AI; satellite data analytics; infrastructure monitoring
+UK Centre for Ecology & Hydrology,"Wallingford, United Kingdom",https://www.ceh.ac.uk,,,geoinformatics,Research centre; land cover mapping; earth observation; environmental data
+British Antarctic Survey,"Cambridge, United Kingdom",https://www.bas.ac.uk,,,geoinformatics,Research institute; remote sensing; GIS; environmental monitoring
+UM6P Center for Remote Sensing Applications (CRSA),"Benguerir, Morocco",https://crsa.um6p.ma,,,geoinformatics,University research center; remote sensing; earth observation; agriculture; GeoAI
+Centre Royal de Télédétection Spatiale (CRTS),"Rabat, Morocco",https://www.crts.gov.ma,,,geoinformatics,National remote sensing centre; earth observation; satellite imagery
+ANCFCC (Cadastre and Cartography Agency),"Rabat, Morocco",https://www.ancfcc.gov.ma,,,gis,Cadastre; cartography; geodesy; GIS
+OCP Group,"Casablanca, Morocco",https://www.ocpgroup.ma,,,data,Data science; agriculture; geospatial data
+IAV Hassan II (geomatics school),"Rabat, Morocco",https://www.iav.ac.ma,,,gis,University research; geomatics; topography; remote sensing
+Synspective,"Tokyo, Japan",https://synspective.com,,,geoinformatics,SAR satellite startup; earth observation; geospatial data analytics
+Axelspace,"Tokyo, Japan",https://www.axelspace.com,,,geoinformatics,Earth observation microsatellites; satellite imagery
+iQPS,"Fukuoka, Japan",https://i-qps.net,,,geoinformatics,SAR satellite startup; earth observation
+PASCO Corporation,"Tokyo, Japan",https://www.pasco.co.jp,,,lidar,Aerial surveying; LiDAR; GIS; 3D mapping; satellite imagery
+Kokusai Kogyo,"Tokyo, Japan",https://www.kkc.co.jp,,,gis,Geospatial information; GIS; surveying; LiDAR
+JAXA Earth Observation Research Center,"Tsukuba, Japan",https://www.eorc.jaxa.jp,,,geoinformatics,Research centre; earth observation; remote sensing; satellite data
+Tellus (Sakura Internet),"Tokyo, Japan",https://www.tellusxdp.com,,,data,Satellite data platform; data science; earth observation

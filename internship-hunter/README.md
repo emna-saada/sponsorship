@@ -1,78 +1,89 @@
-# Internship Hunter: geoinformatics · GIS / SIG · GeoAI · remote sensing
+# Internship Hunter: GIS · Earth observation · GeoAI · LiDAR · Data science
 
-A personal tool that looks for **final-year (PFE / end-of-studies) internships worldwide** in
-geoinformatics, GIS/SIG, GeoAI, remote sensing and spatial data. It scores each posting against
-your resume, finds a **verified** recruiting email, writes a tailored cover letter, and emails
-your application with your resume and cover letter attached.
+A personal tool that finds **paid final-year (PFE) internships starting January or February 2027,
+for 4 to 6 months**, in **Switzerland, Morocco, the UK, France and Japan** (plus remote roles open
+to them). It works for both company and research-lab internships. It picks **the right resume for
+each offer** (GIS, Geoinformatics/EO, LiDAR or Data), finds verified contacts, writes the cover
+letter, and emails the application. For LinkedIn it prepares the links and notes for you.
 
 ```
-discover ──► score vs. resume ──► enrich (find + verify email) ──► review/approve ──► send ──► report
- job APIs     keywords (EN/FR/DE/ES)   posting text, company site     you decide         SMTP      HTML dashboard
- + startups   + skills overlap         MX check, no guessed emails                      dry-run    + LinkedIn links
+discover / prospect ─► score ─► choose resume ─► enrich + research ─► review ─► send ─► report + LinkedIn
+ job sites, AI web     country, paid,  by keywords    verified emails,      you      SMTP,    dashboard,
+ search, CSV lists     dates, fit                     LinkedIn page, facts  decide   dry-run  notes to paste
 ```
+
+## What each offer is checked for
+| Check | How |
+|---|---|
+| Your specialty | keywords of the 4 resume tracks (GIS, EO/GeoAI, LiDAR/3D, data/ML), in English, French, German and Japanese |
+| Internship | intern, stage, PFE, fin d'études, research intern, インターン… |
+| Country | Switzerland, Morocco, UK, France, Japan (cities too: Lausanne, Benguerir, Harwell, Toulouse, Tsukuba…) |
+| Paid | "unpaid" / "non rémunéré" offers are dropped; stipend, salary, gratification, CHF/£/€/円 amounts rank higher; France counts as paid (legal gratification beyond 2 months) |
+| Dates | Jan/Feb 2027 and 4 to 6 months rank higher; summer and 2- or 3-month internships rank lower |
+| Research or company | lab / institute / university / thesis wording, so the letter is written to a research team |
+| Which resume | the track whose keywords the offer matches best; override with `python -m hunter track <id> lidar` |
 
 ## Where opportunities come from
-| Source | Coverage | Key needed |
+| Source | Covers | Key |
 |---|---|---|
-| Arbeitnow | Europe (strong in Germany) | no |
-| Remotive, Remote OK, Jobicy | Remote jobs open worldwide | no |
-| Adzuna | 19 countries (UK, US, CA, AU, DE, FR, NL, BE, AT, CH, ES, IT, PL, IN, SG, NZ, ZA, BR, MX) | free key at developer.adzuna.com |
-| Company career boards (Greenhouse / Lever / Ashby) | the geospatial companies in `data/companies.csv` | no |
-| `data/companies.csv` (import) | 29 geospatial companies and startups (EO, GeoAI, open-source GIS) for spontaneous applications | no |
-| Your own CSV | anything you find on LinkedIn, EURAXESS, your school's job board… | no |
+| `prospect` (Claude + live web search) | **companies, startups and labs in every target country**, with website, careers page, LinkedIn page and published emails | `ANTHROPIC_API_KEY` |
+| `data/companies.csv` | 46 hand-picked organizations in the 5 countries (startups, agencies, research labs) | none |
+| Adzuna | UK, France, Switzerland | free: developer.adzuna.com |
+| Reed | UK | free: reed.co.uk/developers/jobseeker |
+| France Travail | France (official API, includes stages) | free: francetravail.io |
+| Remotive, Remote OK, Jobicy, Arbeitnow | remote roles and Europe | none |
+| Your own CSV (`data/my_contacts_template.csv`) | anything from LinkedIn, EURAXESS, school boards… | none |
 
-## Setup (5 minutes)
+Morocco and Japan have no job-board APIs, so `prospect` and the CSV list do the work there.
+
+## Setup
 ```bash
 cd internship-hunter
 pip install -r requirements.txt
-python -m hunter init               # creates config.toml: fill in your profile and pitch
-cp ~/path/to/your_resume.pdf data/resume.pdf
+python -m hunter init      # creates config.toml (or use the one prepared for you)
+```
+Put your four resumes in `data/` with the names used in `config.toml`.
 
-export SMTP_PASSWORD="your-app-password"      # Gmail: myaccount.google.com/apppasswords (2FA required)
-export ADZUNA_APP_ID=... ADZUNA_APP_KEY=...   # optional, adds 19 countries
-export ANTHROPIC_API_KEY=...                  # optional, tailors each letter with Claude
+Set your keys in the terminal (Windows: `set NAME=value`, Mac/Linux: `export NAME=value`):
+```
+SMTP_PASSWORD                Gmail app password (required to send)
+ANTHROPIC_API_KEY            AI research + tailored letters (strongly recommended)
+ADZUNA_APP_ID, ADZUNA_APP_KEY, REED_API_KEY,
+FRANCETRAVAIL_CLIENT_ID, FRANCETRAVAIL_CLIENT_SECRET     optional job boards
 ```
 
 ## Daily use
 ```bash
-python -m hunter discover                     # fetch and score postings
-python -m hunter import data/companies.csv    # add the startup list as spontaneous applications
-python -m hunter enrich                       # find + verify contact emails
-python -m hunter review                       # approve / reject one by one (or: approve --min-score 65)
-python -m hunter send                         # DRY RUN: drafts go to outbox/*.eml, check them
-python -m hunter send --live                  # really send (max daily_limit per day)
-python -m hunter report                       # output/opportunities.html dashboard
-python -m hunter linkedin                     # LinkedIn search links + notes to paste
-python -m hunter optout someone@company.com   # never contact that address again
-python -m hunter stats
+python -m hunter discover                      # job boards
+python -m hunter import data/companies.csv     # 46 organizations (once)
+python -m hunter prospect --n 10               # AI: 10 new orgs per country x specialty
+python -m hunter enrich                        # emails from websites, verified
+python -m hunter research --limit 20           # AI: published emails, LinkedIn page, a recent project
+python -m hunter report                        # output/opportunities.html
+python -m hunter review                        # approve / reject
+python -m hunter send                          # DRY RUN to outbox/, check the drafts
+python -m hunter send --live                   # really send (max 15 per day)
+python -m hunter linkedin                      # LinkedIn links + notes
 ```
-
-Add your own leads with a CSV shaped like `data/my_contacts_template.csv`, then
-`python -m hunter import my_leads.csv`.
+`prospect` also takes `--country japan` and `--track lidar` to focus one search.
 
 ## How emails are found and verified
-* Only **published** addresses are used: an email in the posting, or one on the company's own
-  website (homepage, careers, contact, about; `robots.txt` is honored). Addresses are never guessed.
-* Recruiting inboxes (`careers@`, `jobs@`, `stage@`, `recrutement@`, `hr@`, `talent@`…) are preferred
-  over `info@`/`contact@`. `noreply`, `privacy`, `support`, `sales` etc. are discarded, as are
-  addresses on job-board domains.
-* Each address is checked for syntax, disposable domains, and that its domain has a mail server
-  (MX record). An optional SMTP mailbox probe (`smtp_probe = true`) asks the server whether the
-  mailbox exists; many servers refuse to answer, and home connections often block port 25.
+* Only **published** addresses: in the posting, on the organization's own website (`robots.txt`
+  honored), or found by the AI research step **with the URL where it is published**. No guessing.
+* Recruiting inboxes (`careers@`, `jobs@`, `stage@`, `recrutement@`, `hr@`…) are preferred; `noreply`,
+  `privacy`, `support`, `sales` and job-board domains are discarded.
+* Every address must have a working mail server (MX record).
 
-## Safety rails (keep your mailbox out of spam folders)
-* `send` is a **dry run** until you pass `--live`.
-* Nothing is sent before you approve it (`review` / `approve`).
-* `daily_limit` (default 15) and `seconds_between` (default 90 s) between emails.
-* One email per company by default (`one_email_per_company`), and never twice to the same address.
-* Each email has an unsubscribe line and `List-Unsubscribe` header; `optout` keeps a blocklist.
+## Safety rails
+Dry run until `--live`; nothing is sent before you approve it; 15 emails a day, 90 s apart; one email per
+organization; unsubscribe line and `optout` blocklist.
 
-## About LinkedIn
-LinkedIn's user agreement forbids bots that send messages or connection requests, and accounts that
-use them get restricted or banned, which would hurt your search far more than it helps. So this tool
-does **not** automate LinkedIn. Instead, `report` and `linkedin` give you, for every match:
-internship-filtered job searches across 15 locations, a recruiter search link for the company, and a
-connection note under 300 characters to paste. That takes about two minutes a day.
+## LinkedIn
+LinkedIn's user agreement forbids bots that send messages or connection requests, and those accounts
+get restricted, so this tool never automates LinkedIn. For each offer you get the organization's LinkedIn
+page (found by `research`) or a people search (recruiters for companies, researchers for labs), plus a
+connection note under 300 characters to paste. Internship-filtered job searches are prepared for each
+target country.
 
 ## Tests
 ```bash
