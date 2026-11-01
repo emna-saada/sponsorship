@@ -42,6 +42,12 @@ CREATE TABLE IF NOT EXISTS suppression (
 """
 
 
+# Public mailbox providers: one address there does not stand for a whole organization.
+FREE_MAIL = {"gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "hotmail.fr", "live.com", "live.fr",
+             "yahoo.com", "yahoo.fr", "icloud.com", "me.com", "proton.me", "protonmail.com", "gmx.com",
+             "gmx.de", "gmx.ch", "aol.com", "orange.fr", "free.fr", "laposte.net", "mail.com", "yandex.com"}
+
+
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -120,19 +126,31 @@ class DB:
         return [Opportunity(**dict(r)) for r in self.conn.execute(q, args)]
 
     # --- sending history -------------------------------------------------
-    def already_contacted(self, email: str, domain: str, per_company: bool) -> bool:
-        if per_company:
-            q = "SELECT 1 FROM sent_log WHERE email=? OR domain=?"
-            return bool(self.conn.execute(q, (email.lower(), domain.lower())).fetchone())
-        return bool(self.conn.execute("SELECT 1 FROM sent_log WHERE email=?", (email.lower(),)).fetchone())
+    def already_contacted(self, email: str, domain: str, per_company: bool, company: str = "") -> bool:
+        """True if this address, its organization's domain, or an organization with the
+        same name was emailed before (by this tool, or found in your Gmail Sent folder)."""
+        email, domain = email.lower(), domain.lower()
+        if self.conn.execute("SELECT 1 FROM sent_log WHERE email=?", (email,)).fetchone():
+            return True
+        if not per_company:
+            return False
+        # a gmail.com / outlook.com address says nothing about the organization
+        if domain not in FREE_MAIL and self.conn.execute("SELECT 1 FROM sent_log WHERE domain=?", (domain,)).fetchone():
+            return True
+        if company:
+            q = "SELECT 1 FROM opportunities WHERE status='sent' AND lower(trim(company))=?"
+            return bool(self.conn.execute(q, (company.lower().strip(),)).fetchone())
+        return False
 
     def sent_today(self) -> int:
         today = datetime.now(timezone.utc).date().isoformat()
         return self.conn.execute("SELECT COUNT(*) FROM sent_log WHERE sent_at LIKE ?", (today + "%",)).fetchone()[0]
 
-    def log_sent(self, email: str, domain: str, opp_id: str):
-        self.conn.execute("INSERT INTO sent_log VALUES (?,?,?,?)", (email.lower(), domain.lower(), opp_id, now()))
-        self.conn.commit()
+    def log_sent(self, email: str, domain: str, opp_id: str, sent_at: str | None = None, commit: bool = True):
+        self.conn.execute("INSERT INTO sent_log VALUES (?,?,?,?)",
+                          (email.lower(), domain.lower(), opp_id, sent_at or now()))
+        if commit:
+            self.conn.commit()
 
     def suppressed(self, email: str) -> bool:
         return bool(self.conn.execute("SELECT 1 FROM suppression WHERE email=?", (email.lower(),)).fetchone())

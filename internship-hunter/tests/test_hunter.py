@@ -215,7 +215,7 @@ def test_live_send_contacts_each_company_once(workspace, monkeypatch):
     run(workspace, "approve", "--min-score", "0")
     cfg_path = workspace / "config.toml"
     cfg_path.write_text(cfg_path.read_text().replace("seconds_between = 90", "seconds_between = 0"))
-    run(workspace, "send", "--live")
+    run(workspace, "send", "--live", "--skip-gmail-check")
     assert len(sent) == 1  # two GeoOne offers, one email to the company
 
     run(workspace, "optout", "jobs@other.io")
@@ -232,3 +232,67 @@ def test_old_database_is_upgraded(tmp_path):
     conn.close()
     db = DB(tmp_path / "old.db")
     assert db.upsert(Opportunity(title="t", company="c", pay="paid", track="gis"))
+
+
+class FakeIMAP:
+    """Gmail Sent folder with one earlier email to careers@geoone.io (sent by hand)."""
+    def __init__(self, *a, **k): self.selected = None
+    def login(self, *a): pass
+    def list(self):
+        return "OK", [b'(\\HasNoChildren \\Sent) "/" "[Gmail]/Messages envoy&AOk-s"', b'(\\HasNoChildren) "/" "INBOX"']
+    def select(self, name, readonly=False): self.selected = name; return "OK", [b"1"]
+    def search(self, *a): return "OK", [b"1"]
+    def fetch(self, ids, what):
+        return "OK", [(b"1 (BODY[HEADER.FIELDS (TO CC BCC DATE)] {80}",
+                       b"To: GeoOne Careers <careers@geoone.io>\r\nDate: Mon, 02 Nov 2026 10:00:00 +0100\r\n\r\n"), b")"]
+    def logout(self): pass
+
+
+def test_gmail_sent_folder_blocks_resending_after_db_was_deleted(workspace, monkeypatch):
+    sent = []
+
+    class FakeSMTP:
+        def __init__(self, *a, **k): pass
+        def login(self, *a): pass
+        def send_message(self, m): sent.append(m["To"])
+        def quit(self): pass
+
+    import hunter.mailer as mailer
+    monkeypatch.setattr(mailer.smtplib, "SMTP_SSL", FakeSMTP)
+    monkeypatch.setattr(mailer.imaplib, "IMAP4_SSL", FakeIMAP)
+    monkeypatch.setenv("SMTP_PASSWORD", "x")
+    run(workspace, "import", str(workspace / "leads.csv"))  # fresh hunter.db: no memory of earlier sends
+    run(workspace, "enrich")
+    run(workspace, "approve", "--min-score", "0")
+    run(workspace, "send", "--live")
+    assert sent == []  # GeoOne was emailed before from Gmail, so neither of its offers is sent
+    db = DB(workspace / "hunter.db")
+    when = db.conn.execute("SELECT sent_at FROM sent_log WHERE email='careers@geoone.io'").fetchone()[0]
+    assert when.startswith("2026-11-02")  # keeps the real date, so it does not eat today's limit
+
+
+def test_gmail_check_failure_stops_live_send(workspace, monkeypatch):
+    import hunter.mailer as mailer
+
+    class Broken(FakeIMAP):
+        def login(self, *a): raise mailer.imaplib.IMAP4.error("auth failed")
+    monkeypatch.setattr(mailer.imaplib, "IMAP4_SSL", Broken)
+    monkeypatch.setenv("SMTP_PASSWORD", "x")
+    run(workspace, "import", str(workspace / "leads.csv"))
+    run(workspace, "approve", "--min-score", "0")
+    with pytest.raises(SystemExit, match="Nothing was sent"):
+        run(workspace, "send", "--live")
+
+
+def test_free_mail_domain_does_not_block_the_whole_provider(tmp_path):
+    db = DB(tmp_path / "h.db")
+    db.log_sent("prof.a@gmail.com", "gmail.com", "x")
+    assert not db.already_contacted("someone.else@gmail.com", "gmail.com", True)
+    db.log_sent("jobs@geoone.io", "geoone.io", "x")
+    assert db.already_contacted("hr@geoone.io", "geoone.io", True)
+
+
+def test_same_company_name_is_not_contacted_twice(tmp_path):
+    db = DB(tmp_path / "h.db")
+    db.upsert(Opportunity(title="GIS intern", company="GeoOne", status="sent"))
+    assert db.already_contacted("jobs@geoone-labs.ch", "geoone-labs.ch", True, "GeoOne ")

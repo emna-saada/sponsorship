@@ -74,9 +74,19 @@ python -m hunter linkedin                      # LinkedIn links + notes
   `privacy`, `support`, `sales` and job-board domains are discarded.
 * Every address must have a working mail server (MX record).
 
+## Never contacting the same organization twice
+* Before every `send --live`, the tool reads your **Gmail Sent folder** (last 12 months) and records
+  every address you wrote to, by this tool or by hand. If it cannot read it, nothing is sent.
+* It then skips any address already emailed, any address at an organization's domain already
+  emailed (e.g. `jobs@` after `careers@` at the same company), and any organization with the same name.
+  Public providers (gmail.com, outlook.com…) only block the exact address.
+* `hunter.db` also keeps this history. Keep it; if it is lost, the Gmail check rebuilds it.
+* `python -m hunter contacted` lists everyone already contacted; `python -m hunter sync-sent` runs the
+  Gmail check on its own.
+
 ## Safety rails
-Dry run until `--live`; nothing is sent before you approve it; 15 emails a day, 90 s apart; one email per
-organization; unsubscribe line and `optout` blocklist.
+Dry run until `--live`; nothing is sent before you approve it; 15 emails a day, 90 s apart; unsubscribe
+line and `optout` blocklist.
 
 ## LinkedIn
 LinkedIn's user agreement forbids bots that send messages or connection requests, and those accounts

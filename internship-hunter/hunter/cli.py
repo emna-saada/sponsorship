@@ -180,11 +180,20 @@ def cmd_send(cfg, db, args):
     if not queue:
         print("Nothing approved with a verified email. Run enrich/research, then review or approve.")
         return
+    if args.live and not args.skip_gmail_check:
+        from .mailer import sync_sent
+        print("Checking your Gmail Sent folder so nobody is contacted twice…")
+        try:
+            added = sync_sent(cfg, db)
+        except Exception as e:  # never send blind: stop if the check cannot run
+            raise SystemExit(f"Could not read your Gmail Sent folder ({e}).\n"
+                             "Nothing was sent. Fix the problem, or add --skip-gmail-check to rely only on hunter.db.")
+        print(f"  {added} earlier recipients recorded.")
     mode = "LIVE" if args.live else "DRY RUN (writing to outbox/; add --live to send)"
     print(f"{mode}: {len(queue)} applications")
     with Sender(cfg, db, args.live) as sender:
         for o in queue:
-            reason = sender.can_send(o.contact_email)
+            reason = sender.can_send(o.contact_email, o.company)
             if reason:
                 print(f"  skip {o.company}: {reason}")
                 if reason == "daily limit reached":
@@ -208,10 +217,24 @@ def cmd_send(cfg, db, args):
                 print(f"  FAILED {o.company}: {e}")
                 continue
             if args.live:
-                db.update(o.id, status="sent")
+                db.update(o.id, status="sent", note=f"sent {o.contact_email}")
                 print(f"  sent → {o.company} <{o.contact_email}> with {track.resume_pdf.name}")
             else:
                 print(f"  drafted → {path.name} ({track.resume_pdf.name})")
+
+
+def cmd_sync_sent(cfg, db, args):
+    from .mailer import sync_sent
+    added = sync_sent(cfg, db, args.days)
+    total = db.conn.execute("SELECT COUNT(DISTINCT email) FROM sent_log").fetchone()[0]
+    print(f"{added} new addresses recorded from your Gmail Sent folder; {total} addresses will never be emailed again.")
+
+
+def cmd_contacted(cfg, db, args):
+    rows = db.conn.execute("SELECT email, MIN(sent_at), COUNT(*) FROM sent_log GROUP BY email ORDER BY MIN(sent_at)").fetchall()
+    for email_, when, n in rows:
+        print(f"  {str(when)[:10]}  {email_}")
+    print(f"{len(rows)} addresses already contacted.")
 
 
 def cmd_optout(cfg, db, args):
@@ -276,6 +299,10 @@ def main(argv=None):
     p = sub.add_parser("send", help="send approved applications (dry run unless --live)")
     p.add_argument("--live", action="store_true")
     p.add_argument("--limit", type=int, default=15)
+    p.add_argument("--skip-gmail-check", action="store_true", help="do not read the Gmail Sent folder first")
+    p = sub.add_parser("sync-sent", help="record everyone you emailed from Gmail so they are never emailed again")
+    p.add_argument("--days", type=int, default=365)
+    sub.add_parser("contacted", help="list every address already contacted")
     p = sub.add_parser("optout", help="never contact this address again")
     p.add_argument("email")
     sub.add_parser("stats")
@@ -286,6 +313,6 @@ def main(argv=None):
     cfg = config_mod.load(args.config)
     db = DB(cfg.db_path)
     try:
-        globals()[f"cmd_{args.cmd}"](cfg, db, args)
+        globals()[f"cmd_{args.cmd.replace('-', '_')}"](cfg, db, args)
     except KeyboardInterrupt:
         sys.exit(130)
