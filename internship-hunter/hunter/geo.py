@@ -20,16 +20,24 @@ COUNTRIES = {
                "Tours", "Angers", "Caen", "Metz", "Saclay", "Massy", "Palaiseau", "Boulogne-Billancourt"],
     "japan": ["Japan", "日本", "Tokyo", "東京", "Osaka", "Kyoto", "Yokohama", "Nagoya", "Tsukuba", "Sapporo",
               "Fukuoka", "Sendai", "Kobe", "Chiba", "Kawasaki", "Sagamihara", "Hiroshima", "Okinawa"],
+    "saudi_arabia": ["Saudi Arabia", "KSA", "Riyadh", "Jeddah", "Dammam", "Dhahran", "Khobar", "Al Khobar",
+                     "Thuwal", "KAUST", "NEOM", "Mecca", "Makkah", "Medina", "Madinah", "Jubail", "Yanbu",
+                     "Abha", "Tabuk", "السعودية", "الرياض", "جدة"],
+    "qatar": ["Qatar", "Doha", "Lusail", "Al Rayyan", "Ar-Rayyan", "Al Wakrah", "Education City", "Ras Laffan",
+              "قطر", "الدوحة"],
+    "kuwait": ["Kuwait", "Kuwait City", "Shuwaikh", "Hawalli", "Salmiya", "Ahmadi", "Jahra", "Farwaniya",
+               "الكويت"],
 }
 # Adzuna locations end with the country code we searched, e.g. "London (GB)"
-CODES = {"GB": "uk", "FR": "france", "CH": "switzerland", "MA": "morocco", "JP": "japan"}
-REMOTE_OPEN = re.compile(r"\b(worldwide|anywhere|global|europe|emea|africa|mena)\b", re.I)
+CODES = {"GB": "uk", "FR": "france", "CH": "switzerland", "MA": "morocco", "JP": "japan",
+         "SA": "saudi_arabia", "QA": "qatar", "KW": "kuwait"}
+REMOTE_OPEN = re.compile(r"\b(worldwide|anywhere|global|europe|emea|africa|mena|gcc|middle east)\b", re.I)
 
 
 def _has(text: str, word: str) -> bool:
     flags = 0 if word.isupper() else re.I  # "UK" must stay uppercase
-    if any(ord(c) >= 0x2E80 for c in word):
-        return word in text  # 日本 / 東京 have no word boundaries
+    if any(ord(c) >= 0x0600 for c in word):
+        return word in text  # Arabic / Japanese names: match as plain text
     return re.search(rf"(?<![\w-]){re.escape(word)}(?![\w-])", text, flags) is not None
 
 
@@ -51,4 +59,5 @@ def country(location: str, description: str = "") -> str:
 
 
 LABELS = {"switzerland": "Switzerland", "morocco": "Morocco", "uk": "United Kingdom",
-          "france": "France", "japan": "Japan", "remote": "Remote", "": "Unknown"}
+          "france": "France", "japan": "Japan", "saudi_arabia": "Saudi Arabia", "qatar": "Qatar",
+          "kuwait": "Kuwait", "remote": "Remote", "": "Unknown"}

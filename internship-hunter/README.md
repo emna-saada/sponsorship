@@ -1,7 +1,7 @@
 # Internship Hunter: GIS · Earth observation · GeoAI · LiDAR · Data science
 
 A personal tool that finds **paid final-year (PFE) internships starting January or February 2027,
-for 4 to 6 months**, in **Switzerland, Morocco, the UK, France and Japan** (plus remote roles open
+for 4 to 6 months**, in **Switzerland, Morocco, the UK, France, Japan, Saudi Arabia, Qatar and Kuwait** (plus remote roles open
 to them). It works for both company and research-lab internships. It picks **the right resume for
 each offer** (GIS, Geoinformatics/EO, LiDAR or Data), finds verified contacts, writes the cover
 letter, and emails the application. For LinkedIn it prepares the links and notes for you.
@@ -17,7 +17,7 @@ discover / prospect ─► score ─► choose resume ─► enrich + research �
 |---|---|
 | Your specialty | keywords of the 4 resume tracks (GIS, EO/GeoAI, LiDAR/3D, data/ML), in English, French, German and Japanese |
 | Internship | intern, stage, PFE, fin d'études, research intern, インターン… |
-| Country | Switzerland, Morocco, UK, France, Japan (cities too: Lausanne, Benguerir, Harwell, Toulouse, Tsukuba…) |
+| Country | Switzerland, Morocco, UK, France, Japan, Saudi Arabia, Qatar, Kuwait (cities too: Lausanne, Benguerir, Harwell, Toulouse, Tsukuba, Thuwal, Doha…) |
 | Paid | "unpaid" / "non rémunéré" offers are dropped; stipend, salary, gratification, CHF/£/€/円 amounts rank higher; France counts as paid (legal gratification beyond 2 months) |
 | Dates | Jan/Feb 2027 and 4 to 6 months rank higher; summer and 2- or 3-month internships rank lower |
 | Research or company | lab / institute / university / thesis wording, so the letter is written to a research team |
@@ -27,14 +27,14 @@ discover / prospect ─► score ─► choose resume ─► enrich + research �
 | Source | Covers | Key |
 |---|---|---|
 | `prospect` (Claude + live web search) | **companies, startups and labs in every target country**, with website, careers page, LinkedIn page and published emails | `ANTHROPIC_API_KEY` |
-| `data/companies.csv` | 46 hand-picked organizations in the 5 countries (startups, agencies, research labs) | none |
+| `data/companies.csv` | hand-picked organizations in the 8 countries (startups, agencies, research labs) | none |
 | Adzuna | UK, France, Switzerland | free: developer.adzuna.com |
 | Reed | UK | free: reed.co.uk/developers/jobseeker |
 | France Travail | France (official API, includes stages) | free: francetravail.io |
 | Remotive, Remote OK, Jobicy, Arbeitnow | remote roles and Europe | none |
 | Your own CSV (`data/my_contacts_template.csv`) | anything from LinkedIn, EURAXESS, school boards… | none |
 
-Morocco and Japan have no job-board APIs, so `prospect` and the CSV list do the work there.
+Morocco, Japan and the Gulf countries have no free job-board APIs, so `prospect` and the CSV lists do the work there.
 
 ## Setup
 ```bash
@@ -55,7 +55,7 @@ FRANCETRAVAIL_CLIENT_ID, FRANCETRAVAIL_CLIENT_SECRET     optional job boards
 ## Daily use
 ```bash
 python -m hunter discover                      # job boards
-python -m hunter import data/companies.csv     # 46 organizations (once)
+python -m hunter import data/companies.csv     # starter organizations (once)
 python -m hunter prospect --n 10               # AI: 10 new orgs per country x specialty
 python -m hunter enrich                        # emails from websites, verified
 python -m hunter research --limit 20           # AI: published emails, LinkedIn page, a recent project

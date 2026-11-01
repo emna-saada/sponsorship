@@ -80,6 +80,10 @@ def test_countries():
     assert geo.country("London (GB)") == "uk"
     assert geo.country("Lausanne") == "switzerland"
     assert geo.country("New York, USA") == ""
+    assert geo.country("Thuwal, Saudi Arabia") == "saudi_arabia"
+    assert geo.country("Doha") == "qatar"
+    assert geo.country("الكويت") == "kuwait"
+    assert geo.country("Riyadh (SA)") == "saudi_arabia"
 
 
 def test_short_acronyms_are_case_sensitive():

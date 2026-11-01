@@ -80,8 +80,9 @@ queries = ["data science intern", "machine learning intern", "stage data science
 pitch = """Two or three concrete results from this resume, in your own words."""
 
 [search]
-# Only these countries (plus remote roles open to them). Keys: switzerland, morocco, uk, france, japan.
-target_countries = ["switzerland", "morocco", "uk", "france", "japan"]
+# Only these countries (plus remote roles open to them).
+# Keys: switzerland, morocco, uk, france, japan, saudi_arabia, qatar, kuwait
+target_countries = ["switzerland", "morocco", "uk", "france", "japan", "saudi_arabia", "qatar", "kuwait"]
 allow_remote = true
 # Drop internships that say they are unpaid; paid / funded ones rank higher.
 require_paid = true
@@ -96,7 +97,7 @@ internship_keywords = [
 exclude_keywords = ["senior", "principal", "staff engineer", "head of", "director",
                     "10+ years", "5+ years", "3+ years", "PhD position", "postdoc"]
 min_score = 45
-# Adzuna covers the UK, France and Switzerland (not Morocco or Japan).
+# Adzuna covers the UK, France and Switzerland (not Morocco, Japan or the Gulf).
 adzuna_countries = ["gb", "fr", "ch"]
 sources = ["arbeitnow", "remotive", "remoteok", "jobicy", "adzuna", "reed", "francetravail", "ats"]
 
