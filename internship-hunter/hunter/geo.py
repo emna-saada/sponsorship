@@ -27,10 +27,20 @@ COUNTRIES = {
               "قطر", "الدوحة"],
     "kuwait": ["Kuwait", "Kuwait City", "Shuwaikh", "Hawalli", "Salmiya", "Ahmadi", "Jahra", "Farwaniya",
                "الكويت"],
+    "uae": ["United Arab Emirates", "UAE", "U.A.E.", "Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Al Ain",
+            "Ras Al Khaimah", "Fujairah", "Masdar City", "الإمارات", "دبي", "أبوظبي"],
+    "bahrain": ["Bahrain", "Manama", "Muharraq", "Riffa", "Sakhir", "البحرين", "المنامة"],
+    "oman": ["Oman", "Muscat", "Salalah", "Sohar", "Nizwa", "Muscat Governorate", "عمان", "مسقط"],
+    "germany": ["Germany", "Deutschland", "Berlin", "Munich", "München", "Hamburg", "Frankfurt", "Cologne",
+                "Köln", "Stuttgart", "Darmstadt", "Karlsruhe", "Bonn", "Potsdam", "Oberpfaffenhofen",
+                "Weßling", "Wessling", "Neustrelitz", "Bremen", "Hannover", "Dresden", "Leipzig", "Heidelberg",
+                "Freiburg", "Würzburg", "Immenstaad", "Friedrichshafen", "Ottobrunn", "Taufkirchen",
+                "Düsseldorf", "Aachen", "Nuremberg", "Nürnberg", "Jena", "Mainz", "Eschborn", "Gilching"],
 }
 # Adzuna locations end with the country code we searched, e.g. "London (GB)"
 CODES = {"GB": "uk", "FR": "france", "CH": "switzerland", "MA": "morocco", "JP": "japan",
-         "SA": "saudi_arabia", "QA": "qatar", "KW": "kuwait"}
+         "SA": "saudi_arabia", "QA": "qatar", "KW": "kuwait", "AE": "uae", "BH": "bahrain", "OM": "oman",
+         "DE": "germany"}
 REMOTE_OPEN = re.compile(r"\b(worldwide|anywhere|global|europe|emea|africa|mena|gcc|middle east)\b", re.I)
 
 
@@ -60,4 +70,5 @@ def country(location: str, description: str = "") -> str:
 
 LABELS = {"switzerland": "Switzerland", "morocco": "Morocco", "uk": "United Kingdom",
           "france": "France", "japan": "Japan", "saudi_arabia": "Saudi Arabia", "qatar": "Qatar",
-          "kuwait": "Kuwait", "remote": "Remote", "": "Unknown"}
+          "kuwait": "Kuwait", "uae": "United Arab Emirates", "bahrain": "Bahrain", "oman": "Oman",
+          "germany": "Germany", "remote": "Remote", "": "Unknown"}

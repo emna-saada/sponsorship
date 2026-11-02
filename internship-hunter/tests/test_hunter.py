@@ -53,7 +53,7 @@ def test_unrelated_internship_excluded():
 
 
 def test_country_outside_targets_excluded():
-    assert score(opp("GIS Intern", "QGIS", location="Berlin, Germany"))[0] == 0
+    assert score(opp("GIS Intern", "QGIS", location="Madrid, Spain"))[0] == 0
     assert score(opp("GIS Intern", "QGIS", location="Tokyo, Japan"))[0] > 0
     assert score(opp("GIS Intern", "QGIS", location="Remote · Worldwide"))[0] > 0
 
@@ -84,6 +84,9 @@ def test_countries():
     assert geo.country("Doha") == "qatar"
     assert geo.country("الكويت") == "kuwait"
     assert geo.country("Riyadh (SA)") == "saudi_arabia"
+    assert geo.country("Darmstadt, Hessen") == "germany"
+    assert geo.country("Dubai") == "uae"
+    assert geo.country("Muscat") == "oman"
 
 
 def test_short_acronyms_are_case_sensitive():
